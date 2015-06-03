@@ -13,7 +13,7 @@ int main(void) {
 	DCOCTL = 0;                 // Select lowest DCOx and MODx settings
 	BCSCTL1 = CALBC1_16MHZ;     // Set range
 	DCOCTL = CALDCO_16MHZ;      // Set DCO step + modulation*/
-	
+
 	// Enable LED
 	P1DIR |= BIT0;
 	P1OUT &= ~BIT0;
@@ -57,30 +57,24 @@ static void takeImage(){
 	 * could be the remainder of the division we send it twice.
 	 */
 	UCA0TXBUF = 254;
-	__delay_cycles(16);
 	while (!(IFG2&UCA0TXIFG));
 	UCA0TXBUF = 254;
-	__delay_cycles(16);
 	while (!(IFG2&UCA0TXIFG));
 
 	//  unsigned char chigh,clow;
-	unsigned char row, col;
+	unsigned char rowCount, colCount;
 
 	// Go to first row
 	setPointerValue(ROWSEL, rowStart);
-	__delay_cycles(16);
 
 	// Loop through all rows
-	for (row=0; row<numRows; ++row) {
+	for (rowCount=0; rowCount<numRows; rowCount++) {
 
 		// Go to first column
 		setPointerValue(COLSEL, colStart);
 
 		// Loop through all columns
-		for (col=0; col<numCols; ++col) {
-
-		  // settling delay for pixel reading
-			__delay_cycles(16);
+		for (colCount=0; colCount<numCols; colCount++) {
 
 			// Decode the current pixel
 			ADC12CTL0 |= ENC + ADC12SC;	// Enable ADC and Start Conversion
@@ -90,20 +84,17 @@ static void takeImage(){
 
 			// Send pixel over UART
 			UCA0TXBUF = rawPixel/20;		//Transmit the first section of the pixel to matlab
-			__delay_cycles(16);
 			while (!(IFG2&UCA0TXIFG));
 			UCA0TXBUF = rawPixel%20;		//Transmit the second section of the pixel to matlab
-			__delay_cycles(16);
 			while (!(IFG2&UCA0TXIFG))
 
 			// Go to next pixel in this row
+			// Pointer previously set to COLSEL
 			incCurrentValue();
 		}
 	// Go to next row
 	incPointerValue(ROWSEL);
 	}
-
-	__delay_cycles(16);
 }
 
 /*********************************************************************/
