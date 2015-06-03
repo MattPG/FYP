@@ -1,9 +1,10 @@
 #ifndef STONYMAN_H_
 #define STONYMAN_H_
 
-/*
+
+/****************************
  * Stonyman Pointers/Registers
- */
+ ***************************/
 #define COLSEL 0    //select column
 #define ROWSEL 1    //select row
 #define VSW 2       //vertical switching
@@ -13,12 +14,11 @@
 #define NBIAS 6     //nbias
 #define AOBIAS 7    //analog out bias
 
-/*
- * Non-static function declarations
- */
-void setPointerValue(char ptr, short val);
-void incPointerValue(char ptr);
-void incCurrentValue();
-void stonymanSetup();
+/****************************
+ * Extern Function Declarations
+ ***************************/
+void setPointerValue(const short ptr, const short val);
+void setPointer(const short ptr);
+void incValue();
 
 #endif /* STONYMAN_H_ */
