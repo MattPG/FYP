@@ -12,7 +12,7 @@ int main(void) {
     // TODO: UNDERSTAND THIS
 	DCOCTL = 0;                 // Select lowest DCOx and MODx settings
 	BCSCTL1 = CALBC1_16MHZ;     // Set range
-	DCOCTL = CALDCO_16MHZ;      // Set DCO step + modulation*/
+	DCOCTL = CALDCO_16MHZ;      // Set DCO step + modulation
 
 	// Enable LED
 	P1DIR |= BIT0;
@@ -69,13 +69,11 @@ static void takeImage(){
 
 	// Loop through all rows
 	for (rowCount=0; rowCount<numRows; rowCount++) {
-
 		// Go to first column
 		setPointerValue(COLSEL, colStart);
 
 		// Loop through all columns
 		for (colCount=0; colCount<numCols; colCount++) {
-
 			// Decode the current pixel
 			ADC12CTL0 |= ENC + ADC12SC;	// Enable ADC and Start Conversion
 			while ((ADC12IFG & BIT0)==0); // Wait until conversion is stored in ADC12MEM0
@@ -97,10 +95,9 @@ static void takeImage(){
 	}
 }
 
-/*********************************************************************/
-//  Interrupt service routine
-//  the was not used in the final code but was during testing
-/*********************************************************************/
+/*
+ * ADC12 ISR
+ */
 #pragma vector=ADC12_VECTOR
 __interrupt void ADC12ISR (void){
 
