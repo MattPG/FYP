@@ -41,11 +41,10 @@ void stonymanSetup(){
 	setPointerValue(CONFIG,16);		// Disable amplifier
 }
 
-/*********************************************************************/
-//  setPointerValue
-//  Sets the pointer to a register and sets the value of that
-//  register
-/*********************************************************************/
+/*
+ * setPointerValue
+ * Sets the pointer to a register and then sets the value of that register
+ */
 void setPointerValue(char ptr, short val){
     setPointer(ptr);    //set pointer to register
     setValue(val);    //set value of that register
@@ -56,15 +55,14 @@ void setPointerValue(char ptr, short val){
  * and increments the value of that register once
  */
 void incPointerValue(char ptr){
-    setPointer(ptr);    //set pointer to register
+    setPointer(ptr);
     pulsePin(IV);
 }
 
-/*********************************************************************/
-//  incValue
-//  Sets the pointer system register to the desired value.  Value is
-//  not reset so the current value must be taken into account
-/*********************************************************************/
+/*
+ * incCurrentValue
+ * Increments the value of the current register once.
+ */
 void incCurrentValue(){
 	pulsePin(IV);
 }
@@ -72,10 +70,10 @@ void incCurrentValue(){
 /****************************
  * Private Functions
  ***************************/
-/*********************************************************************/
-//  setPointer
-//  Sets the pointer system register to the desired value
-/*********************************************************************/
+/*
+ * setPointer
+ * Sets the pointer system register to the desired value
+ */
 static void setPointer(char ptr){
 	// clear pointer
 	pulsePin(RP); // macro
@@ -85,10 +83,10 @@ static void setPointer(char ptr){
 		pulsePin(IP); // macro
 }
 
-/*********************************************************************/
-//  setValue
-//  Sets the value of the current register
-/*********************************************************************/
+/*
+ * setValue
+ * Sets the value of the current register
+ */
 static void setValue(short val){
   // clear value
   pulsePin(RV); // macro
@@ -98,10 +96,10 @@ static void setValue(short val){
 	  pulsePin(IV); // macro
 }
 
-/*********************************************************************/
-//  pulsePin
-//  pulses the pins to the Stonyman vision chip
-/*********************************************************************/
+/*
+ * pulePin
+ * Pulses the pins to the Stonyman vision chip
+ */
 static void pulsePin(char pinToPulse){
 	if(pinToPulse == IV){
 		P1OUT ^= BIT3;
