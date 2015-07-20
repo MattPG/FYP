@@ -39,6 +39,8 @@
 
 static void initialise();
 
+unsigned int rawPixel;
+
 int main(void){
 	initialise();
 
@@ -46,7 +48,6 @@ int main(void){
 	static const int colStart = 1;
 	static const int numRows = 110;
 	static const int numCols = 110;
-	unsigned int rawPixel;
 	unsigned char rowCount, colCount;
 
 	while (1){
@@ -73,15 +74,13 @@ int main(void){
 				// Settling delay for pixel reading
 				__delay_cycles(16);
 
-				ADC12CTL0 |= ENC + ADC12SC;		// Enable ADC and Start Conversion
-				while ((ADC12IFG & BIT0)==0);	// Wait until conversion is stored in ADC12MEM0
-				_NOP();
-				rawPixel = ADC12MEM0;			//ADC value to array
+				ADC12CTL0 |= ADC12SC;				// Start Conversion
+				__bis_SR_register(LPM0_bits + GIE);	// Enter LPM0, Enable interrupts
 #ifdef DEBUG
-				UCA0TXBUF = rawPixel/20;		//Transmit the first section of the pixel to matlab
+				UCA0TXBUF = rawPixel/20;		// Transmit the first section of the pixel to matlab
 				__delay_cycles(16);
 				while (!(IFG2&UCA0TXIFG));
-				UCA0TXBUF = rawPixel%20;		//Transmit the second section of the pixel to matlab
+				UCA0TXBUF = rawPixel%20;		// Transmit the second section of the pixel to matlab
 				__delay_cycles(16);
 				while (!(IFG2&UCA0TXIFG));
 #endif
@@ -116,6 +115,8 @@ static void initialise(){
 	ADC12CTL0 = ADC12ON + SHT0_2 + REFON; 	// Turn on, Internal Vref+ = 1.5V, Sample for 16 ADC12OSC cycles.
 	ADC12CTL1 = SHP;						// Pulse Mode activated by ADC12SC
 	ADC12MCTL0 = SREF_1;					// Use Vr+ = Vref and Vr- = AVss
+	ADC12IE = 0x01;                         // Enable ADC12IFG0
+	ADC12CTL0 |= ENC;						// Re-Enable Converter
 
 #ifdef DEBUG
 	//Setup For UART
@@ -146,7 +147,8 @@ static void initialise(){
 #pragma vector=ADC12_VECTOR
 __interrupt void ADC12ISR (void)
 {
-
+	rawPixel = ADC12MEM0;			// Read Converted Value, IFG is Cleared
+	__bic_SR_register_on_exit(LPM0_bits); // Clear LPM0
 }
 
 
