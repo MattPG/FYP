@@ -35,65 +35,63 @@
 #include <msp430.h>
 #include "stonyman.h"
 
-static void takeImage();
+#define DEBUG
+
 static void initialise();
 
 int main(void){
 	initialise();
 
-	while (1){
-	  takeImage();	//Run take image
-	  P1OUT ^= BIT0;
-	}
-}
-
-void takeImage(){
 	static const int rowStart = 1;
 	static const int colStart = 1;
 	static const int numRows = 110;
 	static const int numCols = 110;
 	unsigned int rawPixel;
-
-	/*
-	 * Transmit number representing start of image. Since this number
-	 * could be the remainder of the division we send it twice, consecutively.
-	 */
-	UCA0TXBUF = 254;
-	__delay_cycles(16);
-	while (!(IFG2&UCA0TXIFG));
-	UCA0TXBUF = 254;
-	__delay_cycles(16);
-	while (!(IFG2&UCA0TXIFG));
-
 	unsigned char rowCount, colCount;
 
-	// Go to first row
-	setPointerValue(ROWSEL,rowStart);
-	// Loop through all rows
-	for (rowCount=numRows; rowCount>0; rowCount--) {
-		// Go to first column
-		setPointerValue(COLSEL,colStart);
-		// Loop through all columns
-		for (colCount=numCols; colCount>0; colCount--) {
-			// Settling delay for pixel reading
-			__delay_cycles(16);
+	while (1){
+#ifdef DEBUG
+		/*
+		 * Transmit number representing start of image. Since this number
+		 * could be the remainder of the division we send it twice, consecutively.
+		 */
+		UCA0TXBUF = 254;
+		__delay_cycles(16);
+		while (!(IFG2&UCA0TXIFG));
+		UCA0TXBUF = 254;
+		__delay_cycles(16);
+		while (!(IFG2&UCA0TXIFG));
+#endif
+		// Go to first row
+		setPointerValue(ROWSEL,rowStart);
+		// Loop through all rows
+		for (rowCount=numRows; rowCount>0; rowCount--) {
+			// Go to first column
+			setPointerValue(COLSEL,colStart);
+			// Loop through all columns
+			for (colCount=numCols; colCount>0; colCount--) {
+				// Settling delay for pixel reading
+				__delay_cycles(16);
 
-			ADC12CTL0 |= ENC + ADC12SC;		// Enable ADC and Start Conversion
-			while ((ADC12IFG & BIT0)==0);	// Wait until conversion is stored in ADC12MEM0
-			_NOP();
-			rawPixel = ADC12MEM0;			//ADC value to array
-			UCA0TXBUF = rawPixel/20;		//Transmit the first section of the pixel to matlab
-			__delay_cycles(16);
-			while (!(IFG2&UCA0TXIFG));
-			UCA0TXBUF = rawPixel%20;		//Transmit the second section of the pixel to matlab
-			__delay_cycles(16);
-			while (!(IFG2&UCA0TXIFG));
-
-			incValue(); // Move to next pixel in this row
+				ADC12CTL0 |= ENC + ADC12SC;		// Enable ADC and Start Conversion
+				while ((ADC12IFG & BIT0)==0);	// Wait until conversion is stored in ADC12MEM0
+				_NOP();
+				rawPixel = ADC12MEM0;			//ADC value to array
+#ifdef DEBUG
+				UCA0TXBUF = rawPixel/20;		//Transmit the first section of the pixel to matlab
+				__delay_cycles(16);
+				while (!(IFG2&UCA0TXIFG));
+				UCA0TXBUF = rawPixel%20;		//Transmit the second section of the pixel to matlab
+				__delay_cycles(16);
+				while (!(IFG2&UCA0TXIFG));
+#endif
+				incValue(); // Move to next pixel in this row
+			}
+			// Go to next row
+			setPointer(ROWSEL);
+			incValue();
 		}
-		// Go to next row
-		setPointer(ROWSEL);
-		incValue();
+	  P1OUT ^= BIT0;
 	}
 }
 
@@ -119,6 +117,7 @@ static void initialise(){
 	ADC12CTL1 = SHP;						// Pulse Mode activated by ADC12SC
 	ADC12MCTL0 = SREF_1;					// Use Vr+ = Vref and Vr- = AVss
 
+#ifdef DEBUG
 	//Setup For UART
 	DCOCTL = 0;								// Select lowest DCOx and MODx settings
 	BCSCTL1 = CALBC1_16MHZ;					// Set DCO
@@ -129,6 +128,7 @@ static void initialise(){
 	UCA0BR1 = 0;							// 16MHz 115200
 	UCA0MCTL = UCBRS2 + UCBRS0;				// Modulation UCBRSx = 5
 	UCA0CTL1 &= ~UCSWRST;					// **Initialize USCI state machine**
+#endif
 
 	//Stonyman Vision Chip setup determined via testing
 	//This was for 5V setup to allow biggest voltage swing
