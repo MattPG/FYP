@@ -33,22 +33,23 @@
 //******************************************************************************************************************************************//
 
 #include <msp430.h>
+#include <stdint.h>
 #include "stonyman.h"
 
 #define DEBUG
 
 static void initialise();
 
-unsigned int rawPixel;
+static uint_fast16_t rawPixel;
 
 int main(void){
 	initialise();
 
-	static const int rowStart = 1;
-	static const int colStart = 1;
-	static const int numRows = 110;
-	static const int numCols = 110;
-	unsigned char rowCount, colCount;
+	static const uint_fast8_t rowStart = 1;
+	static const uint_fast8_t colStart = 1;
+	static const uint_fast8_t numRows = 110;
+	static const uint_fast8_t numCols = 110;
+	static uint_fast8_t rowCount, colCount;
 
 	while (1){
 #ifdef DEBUG
