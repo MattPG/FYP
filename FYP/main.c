@@ -40,16 +40,16 @@
 
 static void initialise();
 
-static uint_fast16_t rawPixel;
+static volatile uint16_t rawPixel;
 
 int main(void){
 	initialise();
 
-	static const uint_fast8_t rowStart = 1;
-	static const uint_fast8_t colStart = 1;
-	static const uint_fast8_t numRows = 110;
-	static const uint_fast8_t numCols = 110;
-	static uint_fast8_t rowCount, colCount;
+	static const uint8_t rowStart = 1;
+	static const uint8_t colStart = 1;
+	static const uint8_t numRows = 110;
+	static const uint8_t numCols = 110;
+	static uint8_t rowCount, colCount;
 
 	while (1){
 #ifdef DEBUG
@@ -96,11 +96,14 @@ int main(void){
 }
 
 static void initialise(){
-	DCOCTL = 0;								// Select lowest DCOx and MODx settings
-	BCSCTL1 = CALBC1_16MHZ;					// Set range
-	DCOCTL = CALDCO_16MHZ;					// Set DCO step + modulation*/
-
 	WDTCTL = WDTPW + WDTHOLD;				// Stop the watchdog timer because were going to sit in a loop
+
+	// Clock Module
+	DCOCTL = CALDCO_16MHZ;					// Set DC0 to 16Mhz
+	BCSCTL1 = CALBC1_16MHZ;					// Use MCLK = DC0
+
+	// Flash Memory
+	FCTL2 = FWKEY + FSSEL_1 + FN5 + FN0;    // MCLK/34 (~471kHz) for Flash Timing Generator
 
 	// Enable LED
 	P1DIR |= BIT0;
@@ -110,9 +113,9 @@ static void initialise(){
 	P1DIR |= BIT2 + BIT3 + BIT4 + BIT5 + BIT6;
 	P1OUT &= ~(BIT2 + BIT3 + BIT4 + BIT5 + BIT6);
 
-	//Setting Up Pins for ADC conversion
+	// ADC12
 	P6SEL |= BIT0;							// Enable A/D channel A0
-	ADC12CTL0 &= ~ENC;						// Disable Converter (allows to modify registers)
+	ADC12CTL0 &= ~ENC;						// Disable Converter (allows modifying registers)
 	ADC12CTL0 = ADC12ON + SHT0_2 + REFON; 	// Turn on, Internal Vref+ = 1.5V, Sample for 16 ADC12OSC cycles.
 	ADC12CTL1 = SHP;						// Pulse Mode activated by ADC12SC
 	ADC12MCTL0 = SREF_1;					// Use Vr+ = Vref and Vr- = AVss
@@ -141,15 +144,20 @@ static void initialise(){
 	setPointerValue(CONFIG,16);				// No amplifier
 }
 
-/*********************************************************************/
-//  Interrupt service routine
-//  the was not used in the final code but was during testing
-/*********************************************************************/
+/*
+ * ADC12 ISR
+ */
 #pragma vector=ADC12_VECTOR
-__interrupt void ADC12ISR (void)
-{
+__interrupt void ADC12ISR (void){
 	rawPixel = ADC12MEM0;			// Read Converted Value, IFG is Cleared
 	__bic_SR_register_on_exit(LPM0_bits); // Clear LPM0
 }
 
-
+/*
+ * DMA Controller ISR
+ */
+#pragma vector = DMA_VECTOR
+__interrupt void DMA_ISR(void){
+	  DMA0CTL &= ~DMAIFG;                       // Clear DMA0 interrupt flag
+	  __bic_SR_register_on_exit(LPM0_bits);     // Exit LPM0 on reti
+}
