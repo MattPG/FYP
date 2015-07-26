@@ -5,20 +5,22 @@
 /****************************
  * Stonyman Pointers/Registers
  ***************************/
-#define COLSEL 0    //select column
-#define ROWSEL 1    //select row
-#define VSW 2       //vertical switching
-#define HSW 3       //horizontal switching
-#define CONFIG 5    //configuration register
-#define VREF 4      //voltage reference
-#define NBIAS 6     //nbias
-#define AOBIAS 7    //analog out bias
+enum STONY_VALS {
+	COLSEL=0,
+	ROWSEL,
+	VSW,
+	HSW,
+	VREF,
+	CONFIG,
+	NBIAS,
+	AOBIAS
+};
 
 /****************************
  * Extern Function Declarations
  ***************************/
-void setPointerValue(const short ptr, const short val);
-void setPointer(const short ptr);
+void setPointerValue(enum STONY_VALS ptr, const uint8_t val);
+void setPointer(enum STONY_VALS ptr);
 void incValue();
 
 #endif /* STONYMAN_H_ */

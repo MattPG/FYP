@@ -1,19 +1,21 @@
 #include <msp430.h>
+#include <stdint.h>
 #include "stonyman.h"
 
 //Stonymann Chip control values
-//static const int PH = 2;			//Amplifier control (Unused)
-static const int IV = 3;			//Increment Value
-static const int RV = 4;			//Reset value
-static const int IP = 5;			//Increment Pointer
-static const int RP = 6;			//Reset Pointer
-
+enum STONY_PINS {
+	PH,	// Amplifier Control
+	IV,	// Increment Value
+	RV,	// Reset Value
+	IP,	// Increment Pointer
+	RP	// Reset Pointer
+};
 
 /****************************
  * Static Function Declarations
  ***************************/
-static void pulsePin(const short pinToPulse);
-static void setValue(const short val);
+static void pulsePin(enum STONY_PINS pinToPulse);
+static void setValue(const uint8_t val);
 
 /****************************
  * Extern Function Definitions
@@ -22,7 +24,7 @@ static void setValue(const short val);
  * setPointerValue
  * Sets the pointer to a register and then sets the value of that register
  */
-void setPointerValue(const short ptr, const short val){
+void setPointerValue(enum STONY_VALS ptr, const uint8_t val){
     setPointer(ptr);    //set pointer to register
     setValue(val);    //set value of that register
 }
@@ -31,10 +33,10 @@ void setPointerValue(const short ptr, const short val){
  * setPointer
  * Sets the pointer system register to the desired value
  */
-void setPointer(const short ptr){
+void setPointer(enum STONY_VALS ptr){
 	// clear pointer
 	pulsePin(RP); // macro
-	short iterator;
+	uint8_t iterator;
 	// increment pointer to desired value
 	for (iterator=ptr; iterator>0; iterator--)
 		pulsePin(IP); // macro
@@ -55,10 +57,10 @@ void incValue(){
  * setValue
  * Sets the value of the current register
  */
-static void setValue(const short val){
+static void setValue(const uint8_t val){
 	// clear pointer
 	pulsePin(RV); // macro
-	short iterator;
+	uint8_t iterator;
 	// increment pointer
 	for (iterator=val; iterator>0; iterator--)
 	  pulsePin(IV); // macro
@@ -68,7 +70,7 @@ static void setValue(const short val){
 //  pulsePin
 //  pulses the pins to the Stonyman vision chip
 /*********************************************************************/
-static void pulsePin(const short pinToPulse){
+static void pulsePin(enum STONY_PINS pinToPulse){
 	if(pinToPulse == IV){
 		P1OUT ^= BIT3;
 		P1OUT ^= BIT3;
@@ -81,11 +83,11 @@ static void pulsePin(const short pinToPulse){
 	}else if(pinToPulse == RV){
 		P1OUT ^= BIT4;
 		P1OUT ^= BIT4;
-	}/*else if(pinToPulse == PH){
+	}else if(pinToPulse == PH){
 		P1OUT ^= BIT2;
 		__delay_cycles(26); //1 microsecond delay
 		P1OUT ^= BIT2;
-	}*/
+	}
 }
 
 /*********************************************************************/
@@ -98,10 +100,10 @@ static void pulsePin(const short pinToPulse){
 //  hbin: set to 1, 2, 4, or 8 to bin horizontally by that amount
 //  vbin: set to 1, 2, 4, or 8 to bin vertically by that amount
 /*********************************************************************/
-void setBinning(const short hbin, const short vbin){
-   short hsw,vsw;
+void setBinning(const uint8_t rowBin, const uint8_t colBin){
+   uint8_t hsw,vsw;
 
-   switch (hbin) //horizontal binning
+   switch (rowBin) //horizontal binning
    {
     case 2:     //downsample by 2
       hsw = 0xAA;
@@ -116,7 +118,7 @@ void setBinning(const short hbin, const short vbin){
       hsw = 0x00;
    }
 
-   switch (vbin)    //vertical binning
+   switch (colBin)    //vertical binning
    {
     case 2:     //downsample by 2
       vsw = 0xAA;
