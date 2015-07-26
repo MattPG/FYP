@@ -100,39 +100,40 @@ static void pulsePin(enum STONY_PINS pinToPulse){
 //  hbin: set to 1, 2, 4, or 8 to bin horizontally by that amount
 //  vbin: set to 1, 2, 4, or 8 to bin vertically by that amount
 /*********************************************************************/
-void setBinning(const uint8_t rowBin, const uint8_t colBin){
-   uint8_t hsw,vsw;
+void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip){
+	uint8_t hsw,vsw;
 
-   switch (rowBin) //horizontal binning
-   {
-    case 2:     //downsample by 2
-      hsw = 0xAA;
-      break;
-    case 4:     //downsample by 4
-      hsw = 0xEE;
-      break;
-    case 8:     //downsample by 8
-      hsw = 0xFE;
-      break;
-    default:    //no binning
-      hsw = 0x00;
-   }
+	// Horizontal binning
+	switch (colSkip){
+	case ONE:    //no binning
+		hsw = 0x00;
+		break;
+	case TWO:     //downsample by 2
+		hsw = 0xAA;
+		break;
+	case FOUR:     //downsample by 4
+		hsw = 0xEE;
+		break;
+	case EIGHT:     //downsample by 8
+		hsw = 0xFE;
+		break;
+	}
 
-   switch (colBin)    //vertical binning
-   {
-    case 2:     //downsample by 2
-      vsw = 0xAA;
-      break;
-    case 4:     //downsample by 4
-      vsw = 0xEE;
-      break;
-    case 8:     //downsample by 8
-      vsw = 0xFE;
-      break;
-    default:    //no binning
-      vsw = 0x00;
-    }
-
+	// Vertical binning
+	switch (rowSkip){
+	case ONE:    //no binning
+		vsw = 0x00;
+		break;
+	case TWO:     //downsample by 2
+		vsw = 0xAA;
+		break;
+	case FOUR:     //downsample by 4
+		vsw = 0xEE;
+		break;
+	case EIGHT:     //downsample by 8
+		vsw = 0xFE;
+		break;
+	}
 	//set switching registers
 	setPointerValue(HSW,hsw);
 	setPointerValue(VSW,vsw);
