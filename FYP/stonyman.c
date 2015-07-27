@@ -109,13 +109,13 @@ void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip){
 		hsw = 0x00;
 		break;
 	case TWO:     //downsample by 2
-		hsw = 0xAA;
+		hsw = 0x55;
 		break;
 	case FOUR:     //downsample by 4
-		hsw = 0xEE;
+		hsw = 0x77;
 		break;
 	case EIGHT:     //downsample by 8
-		hsw = 0xFE;
+		hsw = 0x7F;
 		break;
 	}
 
@@ -128,10 +128,10 @@ void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip){
 		vsw = 0xAA;
 		break;
 	case FOUR:     //downsample by 4
-		vsw = 0xEE;
+		vsw = 0x77;
 		break;
 	case EIGHT:     //downsample by 8
-		vsw = 0xFE;
+		vsw = 0x7F;
 		break;
 	}
 	//set switching registers
