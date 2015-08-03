@@ -105,7 +105,7 @@ void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip){
 
 	// Horizontal binning
 	switch (colSkip){
-	case ONE:    //no binning
+	case NONE:    //no binning
 		hsw = 0x00;
 		break;
 	case TWO:     //downsample by 2
@@ -121,7 +121,7 @@ void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip){
 
 	// Vertical binning
 	switch (rowSkip){
-	case ONE:    //no binning
+	case NONE:    //no binning
 		vsw = 0x00;
 		break;
 	case TWO:     //downsample by 2

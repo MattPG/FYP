@@ -17,7 +17,7 @@ enum STONY_VALS {
 };
 
 enum PIXEL_SKIP {
-	ONE=1,
+	NONE=1,
 	TWO=2,
 	FOUR=4,
 	EIGHT=8
