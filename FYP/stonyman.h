@@ -23,7 +23,7 @@ enum PIXEL_SKIP {
 	EIGHT=8
 };
 
-#define PIXEL_SETTLING_DELAY 96
+#define PIXEL_SETTLING_DELAY 24
 
 /****************************
  * Extern Function Declarations

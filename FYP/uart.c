@@ -1,4 +1,5 @@
 #include <msp430.h>
+#include <stdint.h>
 #include "uart.h"
 
 /****************************
@@ -17,6 +18,36 @@ void uartInit(){
 	UCA0CTL1 &= ~UCSWRST;					// **Initialize USCI state machine**
 }
 
+/**
+ * Sends a single byte out through UART
+ **/
+void inline sendByte(uint8_t byte){
+	while (!(IFG2&UCA0TXIFG));			// USCI_A0 TX buffer ready?
+	UCA0TXBUF = byte;					// TX -> RXed character
+}
 
+/*
+ * Sends an integer
+ */
+void inline sendInt(uint16_t integer){
+	while (!(IFG2&UCA0TXIFG));
+	UCA0TXBUF = integer>>8;			// Transmit the 8 MSB
+	while (!(IFG2&UCA0TXIFG));
+	UCA0TXBUF = integer;			// Transmit the 8 LSBs
+}
 
+/*
+ * Sends an integer
+ */
+void inline sendInts(uint16_t *ints, uint8_t total){
+	uint16_t integer;
+	uint8_t i;
+	for(i=total; i>0; i--){
+		integer = *ints++;
+		while (!(IFG2&UCA0TXIFG));
+		UCA0TXBUF = integer>>8;		// Transmit the 8 MSB
+		while (!(IFG2&UCA0TXIFG));
+		UCA0TXBUF = integer;			// Transmit the 8 LSBs
+	}
+}
 

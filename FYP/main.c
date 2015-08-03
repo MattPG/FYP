@@ -40,10 +40,12 @@
 
 #define DEBUG
 
-#define START_ROW 1
-#define START_COL 1
-#define TOTAL_ROW 110
-#define TOTAL_COL 110
+#define START_ROW 1		// Row to start reading pixels from
+#define TOTAL_ROW 110	// Total number of rows to read
+#define START_COL 0		// Column to start reading pixels from
+#define TOTAL_COL 80	// Total number of columns to read
+#define COL_SKIP 30		// Number of columns to skip in sending
+
 static void initialise();
 
 static volatile uint16_t rawPixel;
@@ -59,28 +61,20 @@ int main(void){
 		 * Transmit number representing start of image. Since this number
 		 * could be the remainder of the division we send it twice, consecutively.
 		 */
-		UCA0TXBUF = 254;
-		while (!(IFG2&UCA0TXIFG));
-		UCA0TXBUF = 254;
-		while (!(IFG2&UCA0TXIFG));
-
+		sendByte(254);
+		sendByte(254);
 		/*
 		 * Transmit the row and column dimensions for this image
 		 * Assumes 0<=row<=255 and 0<=col<=255
 		 */
-		UCA0TXBUF = TOTAL_ROW;
-		while (!(IFG2&UCA0TXIFG));
-		UCA0TXBUF = TOTAL_COL;
-		while (!(IFG2&UCA0TXIFG));
-
+		sendByte(TOTAL_ROW);
+		sendByte(TOTAL_COL-COL_SKIP);
 		/*
 		 * Transmit the row and column offsets for this image
 		 * Assumes 0<=row<=255 and 0<=col<=255
 		 */
-		UCA0TXBUF = START_ROW;
-		while (!(IFG2&UCA0TXIFG));
-		UCA0TXBUF = START_COL;
-		while (!(IFG2&UCA0TXIFG));
+		sendByte(START_ROW);
+		sendByte(START_COL+COL_SKIP);
 #endif
 		// Go to first row
 		setPointerValue(ROWSEL, START_ROW);
@@ -96,10 +90,9 @@ int main(void){
 				ADC12CTL0 |= ADC12SC;				// Start Conversion
 				__bis_SR_register(LPM0_bits + GIE);	// Enter LPM0, Enable interrupts
 #ifdef DEBUG
-				UCA0TXBUF = rawPixel & 0xFF00;		// Transmit the 8 MSBs
-				while (!(IFG2&UCA0TXIFG));
-				UCA0TXBUF = (rawPixel>>8) & 0x00FF;	// Transmit the 8 LSBs
-				while (!(IFG2&UCA0TXIFG));
+				if(!(colCount<COL_SKIP)){
+					sendInt(rawPixel);
+				}
 #endif
 				incValue(); // Move to next pixel in this row
 			}	// End column loop
