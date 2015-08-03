@@ -35,9 +35,15 @@
 #include <msp430.h>
 #include <stdint.h>
 #include "stonyman.h"
+#include "uart.h"
+#include "adc10.h"
 
 #define DEBUG
 
+#define START_ROW 1
+#define START_COL 1
+#define TOTAL_ROW 110
+#define TOTAL_COL 110
 static void initialise();
 
 static volatile uint16_t rawPixel;
@@ -45,11 +51,7 @@ static volatile uint16_t rawPixel;
 int main(void){
 	initialise();
 
-	static const uint8_t rowStart = 1;
-	static const uint8_t colStart = 1;
-	static const uint8_t numRows = 110;
-	static const uint8_t numCols = 110;
-	static uint8_t rowCount, colCount;
+	uint8_t rowCount, colCount;
 
 	while (1){
 #ifdef DEBUG
@@ -58,89 +60,55 @@ int main(void){
 		 * could be the remainder of the division we send it twice, consecutively.
 		 */
 		UCA0TXBUF = 254;
-		__delay_cycles(16);
 		while (!(IFG2&UCA0TXIFG));
 		UCA0TXBUF = 254;
-		__delay_cycles(16);
+		while (!(IFG2&UCA0TXIFG));
+
+		/*
+		 * Transmit the row and column dimensions for this image
+		 * Assumes 0<=row<=255 and 0<=col<=255
+		 */
+		UCA0TXBUF = TOTAL_ROW;
+		while (!(IFG2&UCA0TXIFG));
+		UCA0TXBUF = TOTAL_COL;
+		while (!(IFG2&UCA0TXIFG));
+
+		/*
+		 * Transmit the row and column offsets for this image
+		 * Assumes 0<=row<=255 and 0<=col<=255
+		 */
+		UCA0TXBUF = START_ROW;
+		while (!(IFG2&UCA0TXIFG));
+		UCA0TXBUF = START_COL;
 		while (!(IFG2&UCA0TXIFG));
 #endif
 		// Go to first row
-		setPointerValue(ROWSEL,rowStart);
+		setPointerValue(ROWSEL, START_ROW);
 		// Loop through all rows
-		for (rowCount=numRows; rowCount>0; rowCount--) {
+		for (rowCount=0; rowCount<TOTAL_ROW; rowCount++) {
 			// Go to first column
-			setPointerValue(COLSEL,colStart);
+			setPointerValue(COLSEL, START_COL);
 			// Loop through all columns
-			for (colCount=numCols; colCount>0; colCount--) {
+			for (colCount=0; colCount<TOTAL_COL; colCount++) {
 				// Settling delay for pixel reading
-				__delay_cycles(16);
+				__delay_cycles(PIXEL_SETTLING_DELAY);
 
 				ADC12CTL0 |= ADC12SC;				// Start Conversion
 				__bis_SR_register(LPM0_bits + GIE);	// Enter LPM0, Enable interrupts
 #ifdef DEBUG
-				UCA0TXBUF = rawPixel/20;		// Transmit the first section of the pixel to matlab
-				__delay_cycles(16);
+				UCA0TXBUF = rawPixel & 0xFF00;		// Transmit the 8 MSBs
 				while (!(IFG2&UCA0TXIFG));
-				UCA0TXBUF = rawPixel%20;		// Transmit the second section of the pixel to matlab
-				__delay_cycles(16);
+				UCA0TXBUF = (rawPixel>>8) & 0x00FF;	// Transmit the 8 LSBs
 				while (!(IFG2&UCA0TXIFG));
 #endif
 				incValue(); // Move to next pixel in this row
-			}
+			}	// End column loop
 			// Go to next row
 			setPointer(ROWSEL);
 			incValue();
-		}
-	  P1OUT ^= BIT0;
-	}
-}
-
-static void initialise(){
-	WDTCTL = WDTPW + WDTHOLD;				// Stop the watchdog timer because were going to sit in a loop
-
-	// Clock Module
-	DCOCTL = CALDCO_16MHZ;					// Set DC0 to 16Mhz
-	BCSCTL1 = CALBC1_16MHZ;					// Use MCLK = DC0
-
-	// Flash Memory
-	FCTL2 = FWKEY + FSSEL_1 + FN5 + FN0;    // MCLK/34 (~471kHz) for Flash Timing Generator
-
-	// Enable LED
-	P1DIR |= BIT0;
-	P1OUT &= ~BIT0;
-
-	// Stonyman Pin Connections
-	P1DIR |= BIT2 + BIT3 + BIT4 + BIT5 + BIT6;
-	P1OUT &= ~(BIT2 + BIT3 + BIT4 + BIT5 + BIT6);
-
-	// ADC12
-	P6SEL |= BIT0;							// Enable A/D channel A0
-	ADC12CTL0 = ADC12ON + SHT0_2 + REFON; 	// Turn on, Internal Vref+ = 1.5V, Sample for 16 ADC12OSC cycles.
-	ADC12CTL1 = SHP;						// Pulse Mode activated by ADC12SC
-	ADC12MCTL0 = SREF_1;					// Use Vr+ = Vref and Vr- = AVss
-	ADC12IE = 0x01;                         // Enable ADC12IFG0
-	ADC12CTL0 |= ENC;						// Enable Converter
-
-#ifdef DEBUG
-	//Setup For UART
-	DCOCTL = 0;								// Select lowest DCOx and MODx settings
-	BCSCTL1 = CALBC1_16MHZ;					// Set DCO
-	DCOCTL = CALDCO_16MHZ;
-	P3SEL = 0x30;							// P3.4,5 = USCI_A0 TXD/RXD
-	UCA0CTL1 |= UCSSEL_2;					// SMCLK
-	UCA0BR0 = 139;							// 16MHz 115200 baud
-	UCA0BR1 = 0;							// 16MHz 115200
-	UCA0MCTL = UCBRS2 + UCBRS0;				// Modulation UCBRSx = 5
-	UCA0CTL1 &= ~UCSWRST;					// **Initialize USCI state machine**
-#endif
-
-	//Stonyman Vision Chip setup determined via testing
-	//This was for 5V setup to allow biggest voltage swing
-	setPointerValue(AOBIAS, 60);
-	setPointerValue(NBIAS, 60);
-	setPointerValue(HSW, 0);				// No horz. binning
-	setPointerValue(VSW, 0);				// No vert. binning
-	setPointerValue(CONFIG,16);				// No amplifier
+		}	// End row loop
+	  P1OUT ^= BIT0; // Full image iterated
+	}	// End infinite while loop
 }
 
 /*
@@ -152,11 +120,18 @@ __interrupt void ADC12ISR (void){
 	__bic_SR_register_on_exit(LPM0_bits); // Clear LPM0
 }
 
-/*
- * DMA Controller ISR
- */
-#pragma vector = DMA_VECTOR
-__interrupt void DMA_ISR(void){
-	  DMA0CTL &= ~DMAIFG;                       // Clear DMA0 interrupt flag
-	  __bic_SR_register_on_exit(LPM0_bits);     // Exit LPM0 on reti
+static void initialise(){
+	WDTCTL = WDTPW + WDTHOLD;				// Stop the watchdog timer because were going to sit in a loop
+
+	// Clock Module
+	DCOCTL = CALDCO_16MHZ;					// Set DC0 to 16Mhz
+	BCSCTL1 = CALBC1_16MHZ;					// Use MCLK = DC0
+
+	// Enable LED
+	P1DIR |= BIT0;
+	P1OUT &= ~BIT0;
+
+	adc10Init();
+	stonymanInit();
+	uartInit();
 }

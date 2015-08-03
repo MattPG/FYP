@@ -21,6 +21,25 @@ static void setValue(const uint8_t val);
  * Extern Function Definitions
  ***************************/
 /*
+ * stonymanInit
+ * Initialisation function for the stonyman camera
+ */
+void stonymanInit(){
+	// Stonyman Pin Connections
+	P1DIR |= BIT2 + BIT3 + BIT4 + BIT5 + BIT6;
+	P1OUT &= ~(BIT2 + BIT3 + BIT4 + BIT5 + BIT6);
+
+	/*
+	 * Assert configuration settings in stonmany registers
+	 * Stonyman Vision Chip setup determined via testing
+	 * This was for 5V setup to allow biggest voltage swing
+	 */
+	setPointerValue(AOBIAS, 60);
+	setPointerValue(NBIAS, 60);
+	setBinning(NONE, NONE);
+	setPointerValue(CONFIG,16);				// No amplifier
+}
+/*
  * setPointerValue
  * Sets the pointer to a register and then sets the value of that register
  */

@@ -23,9 +23,12 @@ enum PIXEL_SKIP {
 	EIGHT=8
 };
 
+#define PIXEL_SETTLING_DELAY 96
+
 /****************************
  * Extern Function Declarations
  ***************************/
+void stonymanInit();
 void setPointerValue(enum STONY_VALS ptr, const uint8_t val);
 void setPointer(enum STONY_VALS ptr);
 void incValue();
