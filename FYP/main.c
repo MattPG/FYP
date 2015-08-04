@@ -31,56 +31,40 @@
 // Also read the MSP data sheet and User guide if you dont understand how they work
 // (Final development of the code should just bin all but the bright values and store the row and column numbers)
 //******************************************************************************************************************************************//
-
+/*
+ * Must have optmisation level 3 (-o3) enabled!
+ */
 #include <msp430.h>
 #include <stdint.h>
+
+#include "adc12.h"
 #include "stonyman.h"
 #include "uart.h"
-#include "adc10.h"
 
 #define DEBUG
 
-#define START_ROW 1		// Row to start reading pixels from
-#define TOTAL_ROW 110	// Total number of rows to read
-#define START_COL 0		// Column to start reading pixels from
-#define TOTAL_COL 80	// Total number of columns to read
+#define START_ROW 21	// Row to start reading pixels from
+#define TOTAL_ROW 90	// Total number of rows to read
+#define START_COL 50	// Column to start reading pixels from
+#define TOTAL_COL 11	// Total number of columns to read
 
 static void initialise();
 
 static volatile uint16_t rawPixel;
+static volatile uint16_t image[2][TOTAL_ROW][TOTAL_COL];
+static uint8_t rowCount, colCount, imageCount; // Used in ADC12 ISR
 
 int main(void){
 	initialise();
 
-	uint8_t rowCount, colCount;
-
 	while (1){
-#ifdef DEBUG
-		/*
-		 * Transmit number representing start of image. Since this number
-		 * could be the remainder of the division we send it twice, consecutively.
-		 */
-		sendByte(254);
-		sendByte(254);
-		/*
-		 * Transmit the row and column dimensions for this image
-		 * Assumes 0<=row<=255 and 0<=col<=255
-		 */
-		sendByte(TOTAL_ROW);
-		sendByte(TOTAL_COL);
-		/*
-		 * Transmit the row and column offsets for this image
-		 * Assumes 0<=row<=255 and 0<=col<=255
-		 */
-		sendByte(START_ROW);
-		sendByte(START_COL);
-#endif
+		imageCount = 0;
 		// Go to first row
-		setPointerValue(ROWSEL, START_ROW);
+		setRow(START_ROW);
 		// Loop through all rows
 		for (rowCount=0; rowCount<TOTAL_ROW; rowCount++) {
 			// Go to first column
-			setPointerValue(COLSEL, START_COL);
+			setCol(START_COL);
 			// Loop through all columns
 			for (colCount=0; colCount<TOTAL_COL; colCount++) {
 				// Settling delay for pixel reading
@@ -88,14 +72,66 @@ int main(void){
 
 				ADC12CTL0 |= ADC12SC;				// Start Conversion
 				__bis_SR_register(LPM0_bits + GIE);	// Enter LPM0, Enable interrupts
-#ifdef DEBUG
-					sendInt(rawPixel);
-#endif
+
 				incrementCurrent(); // Move to next column
 			}	// End column loop
 			// Go to next row
 			incrementRow();
 		}	// End row loop
+
+		imageCount=1;
+		// Go to first row
+		setRow(START_ROW);
+		// Loop through all rows
+		for (rowCount=0; rowCount<TOTAL_ROW; rowCount++) {
+			// Go to first column
+			setCol(START_COL);
+			// Loop through all columns
+			for (colCount=0; colCount<TOTAL_COL; colCount++) {
+				// Settling delay for pixel reading
+				__delay_cycles(PIXEL_SETTLING_DELAY);
+
+				ADC12CTL0 |= ADC12SC;				// Start Conversion
+				__bis_SR_register(LPM0_bits + GIE);	// Enter LPM0, Enable interrupts
+
+				incrementCurrent(); // Move to next column
+			}	// End column loop
+			// Go to next row
+			incrementRow();
+		}	// End row loop
+
+#ifdef DEBUG
+		uint8_t q;
+		for(q=0; q<2; q++){
+			/*
+			 * Transmit number representing start of image. Since this number
+			 * could be the remainder of the division we send it twice, consecutively.
+			 */
+			sendByte(254);
+			sendByte(254);
+			/*
+			 * Transmit the row and column dimensions for this image
+			 * Assumes 0<=row<=255 and 0<=col<=255
+			 */
+			sendByte(TOTAL_ROW);
+			sendByte(TOTAL_COL);
+			/*
+			 * Transmit the row and column offsets for this image
+			 * Assumes 0<=row<=255 and 0<=col<=255
+			 */
+			sendByte(START_ROW);
+			sendByte(START_COL);
+			/*
+			 * Transmit the image
+			 */
+			uint8_t i,j;
+			for(i=0;i<TOTAL_ROW;i++){
+				for(j=0;j<TOTAL_COL;j++){
+					sendInt(image[q][i][j]);
+				}
+			}
+		}
+#endif
 	  P1OUT ^= BIT0; // Full image iterated
 	}	// End infinite while loop
 }
@@ -105,7 +141,7 @@ int main(void){
  */
 #pragma vector=ADC12_VECTOR
 __interrupt void ADC12ISR (void){
-	rawPixel = ADC12MEM0;			// Read Converted Value, IFG is Cleared
+	image[imageCount][rowCount][colCount] = ADC12MEM0;			// Read Converted Value, IFG is Cleared
 	__bic_SR_register_on_exit(LPM0_bits); // Clear LPM0
 }
 

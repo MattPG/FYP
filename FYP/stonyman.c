@@ -16,6 +16,7 @@ enum STONY_PINS {
  ***************************/
 static inline void setPointer(enum STONY_VALS ptr);
 static inline void setValue(const uint8_t val);
+static inline void setPointerValue(enum STONY_VALS ptr, const uint8_t val);
 static inline void pulsePin(enum STONY_PINS pinToPulse);
 
 /****************************
@@ -25,7 +26,7 @@ static inline void pulsePin(enum STONY_PINS pinToPulse);
  * stonymanInit
  * Initialisation function for the stonyman camera
  */
-void stonymanInit(){
+extern void stonymanInit(){
 	// Stonyman Pin Connections
 	P1DIR |= BIT2 + BIT3 + BIT4 + BIT5 + BIT6;
 	P1OUT &= ~(BIT2 + BIT3 + BIT4 + BIT5 + BIT6);
@@ -42,12 +43,19 @@ void stonymanInit(){
 }
 
 /*
- * setPointerValue
- * Sets the pointer to a register and then sets the value of that register
+ * setRow
+ * Moves to the row number provided
  */
-extern void setPointerValue(enum STONY_VALS ptr, const uint8_t val){
-    setPointer(ptr);    //set pointer to register
-    setValue(val);    //set value of that register
+extern void setRow(uint8_t row){
+	setPointerValue(ROWSEL, row);
+}
+
+/*
+ * setCol
+ * Moves to the column number provided
+ */
+extern void setCol(uint8_t col){
+	setPointerValue(COLSEL, col);
 }
 
 /*
@@ -104,6 +112,15 @@ static inline void setValue(const uint8_t val){
 	// increment pointer
 	for (iterator=val; iterator>0; iterator--)
 	  pulsePin(IV); // macro
+}
+
+/*
+ * setPointerValue
+ * Sets the pointer to a register and then sets the value of that register
+ */
+static inline void setPointerValue(enum STONY_VALS ptr, const uint8_t val){
+    setPointer(ptr);    //set pointer to register
+    setValue(val);    //set value of that register
 }
 
 /*
