@@ -13,6 +13,6 @@
 /****************************
  * Extern Function Declarations
  ***************************/
-void adc10Init();
+void adc12Init();
 
 #endif /* ADC12_H_ */

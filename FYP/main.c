@@ -156,7 +156,7 @@ static void initialise(){
 	P1DIR |= BIT0;
 	P1OUT &= ~BIT0;
 
-	adc10Init();
+	adc12Init();
 	stonymanInit();
 	uartInit();
 }

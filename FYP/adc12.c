@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include "uart.h"
 
-void adc10Init(){
+void adc12Init(){
 	P6SEL |= BIT0;							// Enable A/D channel A0
 	ADC12CTL0 = ADC12ON + SHT0_2 + REFON; 	// Turn on, Internal Vref+ = 1.5V, Sample for 16 ADC12OSC cycles.
 	ADC12CTL1 = SHP;						// Pulse Mode activated by ADC12SC
