@@ -13,8 +13,8 @@
  * Extern Function Declarations
  ***************************/
 void uartInit();
-void sendByte(uint8_t byte);
-void sendInt(uint16_t integer);
-void sendInts(uint16_t *ints, uint8_t total);
+inline void sendByte(uint8_t byte);
+inline void sendInt(uint16_t integer);
+inline void sendInts(uint16_t *ints, uint8_t total);
 
 #endif /* UART_H_ */

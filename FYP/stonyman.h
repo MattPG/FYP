@@ -29,9 +29,10 @@ enum PIXEL_SKIP {
  * Extern Function Declarations
  ***************************/
 void stonymanInit();
-void setPointerValue(enum STONY_VALS ptr, const uint8_t val);
-void setPointer(enum STONY_VALS ptr);
-void incValue();
+inline void setPointerValue(enum STONY_VALS ptr, const uint8_t val);
+inline void incrementRow();
+inline void incrementCol();
+inline void incrementCurrent();
 void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip);
 
 #endif /* STONYMAN_H_ */

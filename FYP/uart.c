@@ -21,7 +21,7 @@ void uartInit(){
 /**
  * Sends a single byte out through UART
  **/
-void inline sendByte(uint8_t byte){
+extern void sendByte(uint8_t byte){
 	while (!(IFG2&UCA0TXIFG));			// USCI_A0 TX buffer ready?
 	UCA0TXBUF = byte;					// TX -> RXed character
 }
@@ -29,7 +29,7 @@ void inline sendByte(uint8_t byte){
 /*
  * Sends an integer
  */
-void inline sendInt(uint16_t integer){
+extern void sendInt(uint16_t integer){
 	while (!(IFG2&UCA0TXIFG));
 	UCA0TXBUF = integer>>8;			// Transmit the 8 MSB
 	while (!(IFG2&UCA0TXIFG));
@@ -39,7 +39,7 @@ void inline sendInt(uint16_t integer){
 /*
  * Sends an integer
  */
-void inline sendInts(uint16_t *ints, uint8_t total){
+extern void sendInts(uint16_t *ints, uint8_t total){
 	uint16_t integer;
 	uint8_t i;
 	for(i=total; i>0; i--){

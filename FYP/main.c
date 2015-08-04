@@ -94,11 +94,10 @@ int main(void){
 					sendInt(rawPixel);
 				}
 #endif
-				incValue(); // Move to next pixel in this row
+				incrementCurrent(); // Move to next column
 			}	// End column loop
 			// Go to next row
-			setPointer(ROWSEL);
-			incValue();
+			incrementRow();
 		}	// End row loop
 	  P1OUT ^= BIT0; // Full image iterated
 	}	// End infinite while loop

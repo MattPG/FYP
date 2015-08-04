@@ -14,8 +14,9 @@ enum STONY_PINS {
 /****************************
  * Static Function Declarations
  ***************************/
-static void pulsePin(enum STONY_PINS pinToPulse);
-static void setValue(const uint8_t val);
+static inline void setPointer(enum STONY_VALS ptr);
+static inline void setValue(const uint8_t val);
+static inline void pulsePin(enum STONY_PINS pinToPulse);
 
 /****************************
  * Extern Function Definitions
@@ -39,20 +40,51 @@ void stonymanInit(){
 	setBinning(NONE, NONE);
 	setPointerValue(CONFIG,16);				// No amplifier
 }
+
 /*
  * setPointerValue
  * Sets the pointer to a register and then sets the value of that register
  */
-void setPointerValue(enum STONY_VALS ptr, const uint8_t val){
+extern void setPointerValue(enum STONY_VALS ptr, const uint8_t val){
     setPointer(ptr);    //set pointer to register
     setValue(val);    //set value of that register
 }
 
 /*
+ * incrementRow
+ * Points to the next row
+ */
+extern void incrementRow(){
+	setPointer(ROWSEL);
+	pulsePin(IV);
+}
+
+/*
+ * incrementCol
+ * Points to the next column
+ */
+extern void incrementCol(){
+	setPointer(COLSEL);
+	pulsePin(IV);
+}
+
+/*
+ * incrementCurrent
+ * Increments the value of the current register by val.
+ */
+extern void incrementCurrent(){
+	pulsePin(IV);
+}
+
+/****************************
+ * Static Function Definitions
+ ***************************/
+
+/*
  * setPointer
  * Sets the pointer system register to the desired value
  */
-void setPointer(enum STONY_VALS ptr){
+static inline void setPointer(enum STONY_VALS ptr){
 	// clear pointer
 	pulsePin(RP); // macro
 	uint8_t iterator;
@@ -62,21 +94,10 @@ void setPointer(enum STONY_VALS ptr){
 }
 
 /*
- * incValue
- * Increments the value of the current register by val.
- */
-void incValue(){
-	pulsePin(IV);
-}
-
-/****************************
- * Static Function Definitions
- ***************************/
-/*
  * setValue
  * Sets the value of the current register
  */
-static void setValue(const uint8_t val){
+static inline void setValue(const uint8_t val){
 	// clear pointer
 	pulsePin(RV); // macro
 	uint8_t iterator;
@@ -85,11 +106,11 @@ static void setValue(const uint8_t val){
 	  pulsePin(IV); // macro
 }
 
-/*********************************************************************/
-//  pulsePin
-//  pulses the pins to the Stonyman vision chip
-/*********************************************************************/
-static void pulsePin(enum STONY_PINS pinToPulse){
+/*
+ * pulsePin
+ * pulses the pins to the Stonyman vision chip
+ */
+static inline void pulsePin(enum STONY_PINS pinToPulse){
 	if(pinToPulse == IV){
 		P1OUT ^= BIT3;
 		P1OUT ^= BIT3;
