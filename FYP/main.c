@@ -44,7 +44,6 @@
 #define TOTAL_ROW 110	// Total number of rows to read
 #define START_COL 0		// Column to start reading pixels from
 #define TOTAL_COL 80	// Total number of columns to read
-#define COL_SKIP 30		// Number of columns to skip in sending
 
 static void initialise();
 
@@ -68,13 +67,13 @@ int main(void){
 		 * Assumes 0<=row<=255 and 0<=col<=255
 		 */
 		sendByte(TOTAL_ROW);
-		sendByte(TOTAL_COL-COL_SKIP);
+		sendByte(TOTAL_COL);
 		/*
 		 * Transmit the row and column offsets for this image
 		 * Assumes 0<=row<=255 and 0<=col<=255
 		 */
 		sendByte(START_ROW);
-		sendByte(START_COL+COL_SKIP);
+		sendByte(START_COL);
 #endif
 		// Go to first row
 		setPointerValue(ROWSEL, START_ROW);
@@ -90,9 +89,7 @@ int main(void){
 				ADC12CTL0 |= ADC12SC;				// Start Conversion
 				__bis_SR_register(LPM0_bits + GIE);	// Enter LPM0, Enable interrupts
 #ifdef DEBUG
-				if(!(colCount<COL_SKIP)){
 					sendInt(rawPixel);
-				}
 #endif
 				incrementCurrent(); // Move to next column
 			}	// End column loop
