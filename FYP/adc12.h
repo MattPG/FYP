@@ -5,8 +5,8 @@
  *      Author: matthew
  */
 
-#ifndef ADC10_H_
-#define ADC10_H_
+#ifndef ADC12_H_
+#define ADC12_H_
 
 
 
@@ -15,4 +15,4 @@
  ***************************/
 void adc10Init();
 
-#endif /* ADC10_H_ */
+#endif /* ADC12_H_ */
