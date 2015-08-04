@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include "uart.h"
 
+#define VREF_SETTLING_DELAY 2400
+
 void adc12Init(){
 	P6SEL |= BIT0;							// Enable A/D channel A0
 	ADC12CTL0 = ADC12ON + SHT0_2 + REFON; 	// Turn on, Internal Vref+ = 1.5V, Sample for 16 ADC12OSC cycles.
@@ -17,8 +19,7 @@ void adc12Init(){
 	ADC12CTL0 |= ENC;						// Enable Converter
 
 	// Vref settling delay
-	volatile uint16_t i;
-	for ( i=0; i<0x3600; i++);                // Delay for reference start-up
+	__delay_cycles(VREF_SETTLING_DELAY);
 }
 
 
