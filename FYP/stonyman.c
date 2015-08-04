@@ -36,8 +36,8 @@ extern void stonymanInit(){
 	 * Stonyman Vision Chip setup determined via testing
 	 * This was for 5V setup to allow biggest voltage swing
 	 */
-	setPointerValue(AOBIAS, 60);
-	setPointerValue(NBIAS, 60);
+	setPointerValue(AOBIAS, 55);
+	setPointerValue(NBIAS, 55);
 	setBinning(NONE, NONE);
 	setPointerValue(CONFIG,16);				// No amplifier
 }
