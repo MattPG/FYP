@@ -59,7 +59,6 @@ int main(void){
 	initialise();
 	/*
 	 * TODO: Subtract the two arrays from eachother and send the result.
-	 * TODO: Allow laser signalling
 	 * TODO: Implement math algorithm (in matlab first)
 	 */
 	while (1){
@@ -142,7 +141,7 @@ int main(void){
 			}
 		}
 #endif
-	  P1OUT ^= BIT0; // Full image iterated
+	  ledToggle(); // Full image iterated
 	}	// End infinite while loop
 }
 
@@ -156,15 +155,9 @@ __interrupt void ADC12ISR (void){
 }
 
 static void initialise(){
-	WDTCTL = WDTPW + WDTHOLD;				// Stop the watchdog timer because were going to sit in a loop
-
 	// Clock Module
 	DCOCTL = CALDCO_16MHZ;					// Set DC0 to 16Mhz
 	BCSCTL1 = CALBC1_16MHZ;					// Use MCLK = DC0
-
-	// Enable LED
-	P1DIR |= BIT0;							// Set LED pin (P1.0) as output
-	P1OUT &= ~BIT0;							// Assert LED pin low
 
 	laserInit();
 	adc12Init();
