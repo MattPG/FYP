@@ -40,6 +40,7 @@
 #include "adc12.h"
 #include "stonyman.h"
 #include "uart.h"
+#include "laser.h"
 
 #define DEBUG
 
@@ -56,8 +57,15 @@ static uint8_t rowCount, colCount, imageCount; // Used in ADC12 ISR
 
 int main(void){
 	initialise();
-
+	/*
+	 * TODO: Subtract the two arrays from eachother and send the result.
+	 * TODO: Allow laser signalling
+	 * TODO: Implement math algorithm (in matlab first)
+	 */
 	while (1){
+
+		laserOn();
+
 		imageCount = 0;
 		// Go to first row
 		setRow(START_ROW);
@@ -78,6 +86,8 @@ int main(void){
 			// Go to next row
 			incrementRow();
 		}	// End row loop
+
+		laserOff();
 
 		imageCount=1;
 		// Go to first row
@@ -153,10 +163,13 @@ static void initialise(){
 	BCSCTL1 = CALBC1_16MHZ;					// Use MCLK = DC0
 
 	// Enable LED
-	P1DIR |= BIT0;
-	P1OUT &= ~BIT0;
+	P1DIR |= BIT0;							// Set LED pin (P1.0) as output
+	P1OUT &= ~BIT0;							// Assert LED pin low
 
+	laserInit();
 	adc12Init();
 	stonymanInit();
+#ifdef DEBUG
 	uartInit();
+#endif
 }
