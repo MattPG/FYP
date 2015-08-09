@@ -10,7 +10,6 @@ void uartInit(){
 	DCOCTL = 0;								// Select lowest DCOx and MODx settings
 	BCSCTL1 = CALBC1_16MHZ;					// Set DCO
 	DCOCTL = CALDCO_16MHZ;
-	P3SEL = 0x30;							// P3.4,5 = USCI_A0 TXD/RXD
 	UCA0CTL1 |= UCSSEL_2;					// SMCLK
 	UCA0BR0 = 139;							// 16MHz 115200 baud
 	UCA0BR1 = 0;							// 16MHz 115200

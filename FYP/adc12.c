@@ -1,9 +1,3 @@
-/*
- * adc10.c
- *
- *  Created on: 3 Aug 2015
- *      Author: matthew
- */
 #include <msp430.h>
 #include <stdint.h>
 #include "uart.h"
