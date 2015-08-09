@@ -41,7 +41,7 @@ extern void sendInts(uint16_t *ints, uint8_t total){
 	for(i=total; i>0; i--){
 		integer = *ints++;
 		while (!(IFG2&UCA0TXIFG));
-		UCA0TXBUF = integer>>8;		// Transmit the 8 MSB
+		UCA0TXBUF = integer>>8;			// Transmit the 8 MSB
 		while (!(IFG2&UCA0TXIFG));
 		UCA0TXBUF = integer;			// Transmit the 8 LSBs
 	}
