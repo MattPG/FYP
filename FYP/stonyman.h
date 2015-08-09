@@ -28,12 +28,11 @@ enum PIXEL_SKIP {
 /****************************
  * Extern Function Declarations
  ***************************/
-inline void stonymanInit();
+void stonymanInit();
 inline void setRow(uint8_t row);
 inline void setCol(uint8_t col);
 inline void incrementRow();
 inline void incrementCol();
 inline void incrementCurrent();
-void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip);
 
 #endif /* STONYMAN_H_ */

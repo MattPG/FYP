@@ -18,6 +18,7 @@ static inline void setPointer(enum STONY_VALS ptr);
 static inline void setValue(const uint8_t val);
 static inline void setPointerValue(enum STONY_VALS ptr, const uint8_t val);
 static inline void pulsePin(enum STONY_PINS pinToPulse);
+static void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip);
 
 /****************************
  * Extern Function Definitions
@@ -26,7 +27,7 @@ static inline void pulsePin(enum STONY_PINS pinToPulse);
  * stonymanInit
  * Initialisation function for the stonyman camera
  */
-extern void stonymanInit(){
+void stonymanInit(){
 	// Stonyman Pin Connections
 	P1DIR |= BIT2 + BIT3 + BIT4 + BIT5 + BIT6;
 	P1OUT &= ~(BIT2 + BIT3 + BIT4 + BIT5 + BIT6);
