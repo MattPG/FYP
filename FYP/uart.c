@@ -7,13 +7,14 @@
  ***************************/
 void uartInit(){
 	//Setup For UART
-	DCOCTL = 0;								// Select lowest DCOx and MODx settings
-	BCSCTL1 = CALBC1_16MHZ;					// Set DCO
-	DCOCTL = CALDCO_16MHZ;
-	UCA0CTL1 |= UCSSEL_2;					// SMCLK
-	UCA0BR0 = 139;							// 16MHz 115200 baud
+	/*
+	 * SET UXRXD0 LOW and UXTXD0 HIGH
+	 */
+	UCA0CTL1 |= UCSSEL1;					// SMCLK
+	UCA0BR0 = 138;							// 16MHz 115200 baud
 	UCA0BR1 = 0;							// 16MHz 115200
-	UCA0MCTL = UCBRS2 + UCBRS0;				// Modulation UCBRSx = 5
+	UCA0MCTL = UCBRS2 + UCBRS1 + UCBRS0;	// Modulation UCBRSx = 7
+	P3SEL |= BIT4;							// P3.4 = USCI_A0 TXD
 	UCA0CTL1 &= ~UCSWRST;					// **Initialize USCI state machine**
 }
 
