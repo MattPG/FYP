@@ -6,10 +6,6 @@
  * Extern Function Definitions
  ***************************/
 void uartInit(){
-	//Setup For UART
-	/*
-	 * SET UXRXD0 LOW and UXTXD0 HIGH
-	 */
 	UCA0CTL1 |= UCSSEL1;					// SMCLK
 	UCA0BR0 = 138;							// 16MHz 115200 baud
 	UCA0BR1 = 0;							// 16MHz 115200
