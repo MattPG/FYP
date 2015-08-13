@@ -1,42 +1,27 @@
-//******************************************************************************************************************************************//
-// This is Micah Bearlin-Allardice's source code for the Stonyman Vision chip for MSP430F2618 it was programmed using Code Composer studio V5.4.0.00091
-//  M. Bearlin-Allardice
-//  FYP-Height Esstimation
-//  November 2014
-// If you would like to contact me for help or understanding email me at: micah.allardice@gmail.com
-// This code is for the microc-controller (uC) MSP430F2618 it controls the stonyman vision chip taking x number of images of resolution x by x
-// and then transfers the data via UART to matlab
-// The code was designed to store each pixel value in an array however the uC's RAM can not store all of the values due to size. The current code
-// stores the values in an array of length MAX_PIXELS. This was used for debugging purposes to view the pixel values during testing.
-//
-// When the ADC is read I normally received values between 1500-3500. Values of 0, 2048, 4095 can all indicate some kind of error so be wary
-//
-// Loading code with large arrays on an MSP board cause the watchdog timer to create an error. Therefore to use this code it must be disabled
-// Put the pre_init.c file in the project file containg the camera code - Hoam Chung Should have this file. If he doesn't the code is
-//****************************************************************
-//#include <msp430.h>
-//
-//int _system_pre_init(void)
-//{
-//	WDTCTL = WDTPW + WDTHOLD;    /* disable watchdog timer  */
-//	return 1;
-//}
-//****************************************************************
-//
-// MATT: Large global arrays can be declared with the "__no_init" prefix to prevent WDT triggering before main() is reached.
-//
-// To understand this code you should first definately read the Stonyman Vision Chip data sheet
-// There is also sample code that this was designed off at http://www.ardueye.com/pmwiki.php?n=Main.StonymanLens
-// And some information on the forums at http://embeddedeye.com/
-// Also read the MSP data sheet and User guide if you dont understand how they work
-// (Final development of the code should just bin all but the bright values and store the row and column numbers)
-//******************************************************************************************************************************************//
-/*
- * Must have optmisation level 3 (-o3) enabled!
- */
+/******************************************************************************************************************************************
+FYP-Height Estimation
+Source code for the Stonyman Vision chip & MSP430F2618 uC.
+Programmed using Code Composer studio (old) V5.4.0.00091 (new) V6.1.0.00104
+
+M. Bearlin-Allardice	November 2014	micah.allardice@gmail.com
+M. Greenwood			2015			matt.p.greenwood@gmail.com
+
+The code repeatedly takes an TOTAL_ROW*TOTAL_COL image and sends the dimensions and contents via UART (if is DEBUG defined).
+This was interfaced with a Serial (uart) to USB dongle and read in via Matlab for debugging.
+
+The code assumes that 4*TOTAL_ROW*TOTAL_COL < ~7kb. This is required since there is only 8kb of RAM.
+There are two images stored and each pixel is two bytes.
+
+Recommended Resources:
+ * MSP430x2xx User Guide
+ * MSP430F2618 Data Sheet
+ * Stonyman Vision Chip data sheet
+ * http://embeddedeye.com/ forum for Stonyman
+
+Ideal to have optmisation level 3 (-o3) enabled for inlining.
+******************************************************************************************************************************************/
 #include <msp430.h>
 #include <stdint.h>
-
 #include "adc12.h"
 #include "stonyman.h"
 #include "uart.h"
@@ -51,29 +36,26 @@
 
 static void initialise();
 
-static volatile uint16_t rawPixel;
-static volatile uint16_t image[2][TOTAL_ROW][TOTAL_COL];
-static uint8_t rowCount, colCount, imageCount; // Used in ADC12 ISR
+static volatile uint16_t image[2][TOTAL_ROW][TOTAL_COL];	// Stores the images
+static uint8_t rowCount, colCount, imageCount;				// Used in ADC12 ISR
 
 int main(void){
 	initialise();
 	/*
-	 * TODO: Subtract the two arrays from eachother and send the result.
 	 * TODO: Implement math algorithm (in matlab first)
 	 */
-	while (1){
-
+	while(1){
+		// Capture first image w/ laser
 		laserOn();
-
 		imageCount = 0;
 		// Go to first row
 		setRow(START_ROW);
 		// Loop through all rows
-		for (rowCount=0; rowCount<TOTAL_ROW; rowCount++) {
+		for(rowCount=0; rowCount<TOTAL_ROW; rowCount++){
 			// Go to first column
 			setCol(START_COL);
 			// Loop through all columns
-			for (colCount=0; colCount<TOTAL_COL; colCount++) {
+			for(colCount=0; colCount<TOTAL_COL; colCount++){
 				// Settling delay for pixel reading
 				__delay_cycles(PIXEL_SETTLING_DELAY);
 
@@ -85,18 +67,17 @@ int main(void){
 			// Go to next row
 			incrementRow();
 		}	// End row loop
-
+		// Capture second image w/o laser
 		laserOff();
-
 		imageCount=1;
 		// Go to first row
 		setRow(START_ROW);
 		// Loop through all rows
-		for (rowCount=0; rowCount<TOTAL_ROW; rowCount++) {
+		for(rowCount=0; rowCount<TOTAL_ROW; rowCount++){
 			// Go to first column
 			setCol(START_COL);
 			// Loop through all columns
-			for (colCount=0; colCount<TOTAL_COL; colCount++) {
+			for(colCount=0; colCount<TOTAL_COL; colCount++){
 				// Settling delay for pixel reading
 				__delay_cycles(PIXEL_SETTLING_DELAY);
 
@@ -109,35 +90,51 @@ int main(void){
 			incrementRow();
 		}	// End row loop
 
-#ifdef DEBUG
-		uint8_t q;
-		for(q=0; q<2; q++){
-			/*
-			 * Transmit number representing start of image. Since this number
-			 * could be the remainder of the division we send it twice, consecutively.
-			 */
-			sendByte(254);
-			sendByte(254);
-			/*
-			 * Transmit the row and column dimensions for this image
-			 * Assumes 0<=row<=255 and 0<=col<=255
-			 */
-			sendByte(TOTAL_ROW);
-			sendByte(TOTAL_COL);
-			/*
-			 * Transmit the row and column offsets for this image
-			 * Assumes 0<=row<=255 and 0<=col<=255
-			 */
-			sendByte(START_ROW);
-			sendByte(START_COL);
-			/*
-			 * Transmit the image
-			 */
-			uint8_t i,j;
-			for(i=0;i<TOTAL_ROW;i++){
-				for(j=0;j<TOTAL_COL;j++){
-					sendInt(image[q][i][j]);
+		// Subtract second from first and store in first image
+		uint16_t pixel0, pixel1;
+		uint8_t currRow, currCol;
+		// Loop through all rows
+		for(currRow=TOTAL_ROW; currRow>0; currRow--){
+			// Loop through all columns
+			for(currCol=TOTAL_COL; currCol>0; currCol--){
+				// Get the postive difference of the two pixels
+				pixel0 = image[0][currRow][currCol];
+				pixel1 = image[1][currRow][currCol];
+				if(pixel0 >= pixel1){
+					image[0][currRow][currCol] = pixel0-pixel1;
+				}else{
+					image[0][currRow][currCol] = pixel1-pixel0;
 				}
+			}	// End column loop
+		}	// End row loop
+
+
+#ifdef DEBUG
+		/*
+		 * Transmit number representing start of image. Since this number
+		 * could be the remainder of the division we send it twice, consecutively.
+		 */
+		sendByte(254);
+		sendByte(254);
+		/*
+		 * Transmit the row and column dimensions for this image
+		 * Assumes 0<=row<=255 and 0<=col<=255
+		 */
+		sendByte(TOTAL_ROW);
+		sendByte(TOTAL_COL);
+		/*
+		 * Transmit the row and column offsets for this image
+		 * Assumes 0<=row<=255 and 0<=col<=255
+		 */
+		sendByte(START_ROW);
+		sendByte(START_COL);
+		/*
+		 * Transmit the image
+		 */
+		uint8_t i,j;
+		for(i=0;i<TOTAL_ROW;i++){
+			for(j=0;j<TOTAL_COL;j++){
+				sendInt(image[0][i][j]);
 			}
 		}
 #endif
@@ -150,8 +147,8 @@ int main(void){
  */
 #pragma vector=ADC12_VECTOR
 __interrupt void ADC12ISR (void){
-	image[imageCount][rowCount][colCount] = ADC12MEM0;			// Read Converted Value, IFG is Cleared
-	__bic_SR_register_on_exit(LPM0_bits); // Clear LPM0
+	image[imageCount][rowCount][colCount] = ADC12MEM0;	// Read Converted Value, IFG is Cleared
+	__bic_SR_register_on_exit(LPM0_bits); 				// Clear LPM0
 }
 
 static void initialise(){
