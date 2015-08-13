@@ -18,7 +18,7 @@ void uartInit(){
  * Sends a single byte out through UART
  **/
 extern void sendByte(uint8_t byte){
-	while (!(IFG2&UCA0TXIFG));			// USCI_A0 TX buffer ready?
+	while (!(IFG2&UCA0TXIFG));			// Buffer ready?
 	UCA0TXBUF = byte;					// TX -> RXed character
 }
 
