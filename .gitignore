@@ -1,32 +1,38 @@
-# Object files
-*.o
-*.ko
-*.obj
-*.elf
+.metadata
+.gradle
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
 
-# Precompiled Headers
-*.gch
-*.pch
+# Eclipse Core
+.project
 
-# Libraries
-*.lib
-*.a
-*.la
-*.lo
+# External tool builders
+.externalToolBuilders/
 
-# Shared objects (inc. Windows DLLs)
-*.dll
-*.so
-*.so.*
-*.dylib
+# Locally stored "Eclipse launch configurations"
+*.launch
 
-# Executables
-*.exe
-*.out
-*.app
-*.i*86
-*.x86_64
-*.hex
+# CDT-specific
+.cproject
 
-# Debug files
-*.dSYM/
+# JDT-specific (Eclipse Java Development Tools)
+.classpath
+
+# Java annotation processor (APT)
+.factorypath
+
+# PDT-specific
+.buildpath
+
+# sbteclipse plugin
+.target
+
+# TeXlipse plugin
+.texlipse
