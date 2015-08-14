@@ -22,6 +22,7 @@ Ideal to have optmisation level 3 (-o3) enabled for inlining.
 ******************************************************************************************************************************************/
 #include <msp430.h>
 #include <stdint.h>
+#include <math.h>
 #include "adc12.h"
 #include "stonyman.h"
 #include "uart.h"
@@ -36,7 +37,7 @@ Ideal to have optmisation level 3 (-o3) enabled for inlining.
 
 static void initialise();
 
-static volatile uint16_t image[2][TOTAL_ROW][TOTAL_COL];	// Stores the images
+static volatile int16_t image[2][TOTAL_ROW][TOTAL_COL];	// Stores the images
 static uint8_t rowCount, colCount, imageCount;				// Used in ADC12 ISR
 
 int main(void){
@@ -91,20 +92,14 @@ int main(void){
 		}	// End row loop
 
 		// Subtract second from first and store in first image
-		uint16_t pixel0, pixel1;
 		uint8_t currRow, currCol;
 		// Loop through all rows
-		for(currRow=TOTAL_ROW; currRow>0; currRow--){
+		for(currRow=0; currRow<TOTAL_ROW; currRow++){
 			// Loop through all columns
-			for(currCol=TOTAL_COL; currCol>0; currCol--){
+			for(currCol=0; currCol<TOTAL_COL; currCol++){
 				// Get the postive difference of the two pixels
-				pixel0 = image[0][currRow][currCol];
-				pixel1 = image[1][currRow][currCol];
-				if(pixel0 >= pixel1){
-					image[0][currRow][currCol] = pixel0-pixel1;
-				}else{
-					image[0][currRow][currCol] = pixel1-pixel0;
-				}
+				image[0][currRow][currCol] =
+						abs(image[0][currRow][currCol]-image[1][currRow][currCol]);
 			}	// End column loop
 		}	// End row loop
 
