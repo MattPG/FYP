@@ -2,8 +2,29 @@
 #include <stdint.h>
 #include "stonyman.h"
 
-//Stonymann Chip control values
-enum STONY_PINS {
+// Pin Mappings (excl. analogue output)
+#define PH_POUT P1OUT
+#define PH_PDIR P1DIR
+#define PH_BIT BIT2
+
+#define IV_POUT P1OUT
+#define IV_PDIR P1DIR
+#define IV_BIT BIT3
+
+#define RV_POUT P1OUT
+#define RV_PDIR P1DIR
+#define RV_BIT BIT4
+
+#define IP_POUT P1OUT
+#define IP_PDIR P1DIR
+#define IP_BIT BIT5
+
+#define RP_POUT P1OUT
+#define RP_PDIR P1DIR
+#define RP_BIT BIT6
+
+// Pins Connected (excl. analogue output)
+enum STONY_PINS{
 	PH,	// Amplifier Control
 	IV,	// Increment Value
 	RV,	// Reset Value
@@ -29,8 +50,16 @@ static void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip);
  */
 void stonymanInit(){
 	// Stonyman Pin Connections
-	P1DIR |= BIT2 + BIT3 + BIT4 + BIT5 + BIT6;
-	P1OUT &= ~(BIT2 + BIT3 + BIT4 + BIT5 + BIT6);
+	PH_PDIR |= PH_BIT;
+	PH_POUT &= ~PH_BIT;
+	IV_PDIR |= IV_BIT;
+	IV_POUT &= ~IV_BIT;
+	RV_PDIR |= RV_BIT;
+	RV_POUT &= ~RV_BIT;
+	IP_PDIR |= IP_BIT;
+	IP_POUT &= ~IP_BIT;
+	RP_PDIR |= RP_BIT;
+	RP_POUT &= ~RP_BIT;
 
 	/*
 	 * Assert configuration settings in stonmany registers
@@ -130,21 +159,20 @@ static inline void setPointerValue(enum STONY_VALS ptr, const uint8_t val){
  */
 static inline void pulsePin(enum STONY_PINS pinToPulse){
 	if(pinToPulse == IV){
-		P1OUT ^= BIT3;
-		P1OUT ^= BIT3;
+		P1OUT ^= IV_BIT;
+		P1OUT ^= IV_BIT;
 	}else if(pinToPulse == IP){
-		P1OUT ^= BIT5;
-		P1OUT ^= BIT5;
+		P1OUT ^= IP_BIT;
+		P1OUT ^= IP_BIT;
 	}else if(pinToPulse == RP){
-		P1OUT ^= BIT6;
-		P1OUT ^= BIT6;
+		P1OUT ^= RP_BIT;
+		P1OUT ^= RP_BIT;
 	}else if(pinToPulse == RV){
-		P1OUT ^= BIT4;
-		P1OUT ^= BIT4;
+		P1OUT ^= RV_BIT;
+		P1OUT ^= RV_BIT;
 	}else if(pinToPulse == PH){
-		P1OUT ^= BIT2;
-		__delay_cycles(26); //1 microsecond delay
-		P1OUT ^= BIT2;
+		P1OUT ^= PH_BIT;
+		P1OUT ^= PH_BIT;
 	}
 }
 

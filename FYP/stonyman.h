@@ -5,7 +5,7 @@
 /****************************
  * Stonyman Pointers/Registers
  ***************************/
-enum STONY_VALS {
+enum STONY_VALS{
 	COLSEL=0,
 	ROWSEL,
 	VSW,
@@ -16,14 +16,14 @@ enum STONY_VALS {
 	AOBIAS
 };
 
-enum PIXEL_SKIP {
+enum PIXEL_SKIP{
 	NONE=1,
 	TWO=2,
 	FOUR=4,
 	EIGHT=8
 };
 
-#define PIXEL_SETTLING_DELAY 24
+#define PIXEL_SETTLING_DELAY 8 // 16*delay_time (in micro-seconds, DCO=16MHz)
 
 /****************************
  * Extern Function Declarations
