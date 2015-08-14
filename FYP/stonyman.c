@@ -157,20 +157,20 @@ static inline void setPointerValue(enum STONY_VALS ptr, const uint8_t val){
  */
 static inline void pulsePin(enum STONY_PINS pinToPulse){
 	if(pinToPulse == IV){
-		P1OUT ^= IV_BIT;
-		P1OUT ^= IV_BIT;
+		IV_POUT ^= IV_BIT;
+		IV_POUT ^= IV_BIT;
 	}else if(pinToPulse == IP){
-		P1OUT ^= IP_BIT;
-		P1OUT ^= IP_BIT;
+		IP_POUT ^= IP_BIT;
+		IP_POUT ^= IP_BIT;
 	}else if(pinToPulse == RP){
-		P1OUT ^= RP_BIT;
-		P1OUT ^= RP_BIT;
+		RP_POUT ^= RP_BIT;
+		RP_POUT ^= RP_BIT;
 	}else if(pinToPulse == RV){
-		P1OUT ^= RV_BIT;
-		P1OUT ^= RV_BIT;
+		RV_POUT ^= RV_BIT;
+		RV_POUT ^= RV_BIT;
 	}else if(pinToPulse == PH){
-		P1OUT ^= PH_BIT;
-		P1OUT ^= PH_BIT;
+		PH_POUT ^= PH_BIT;
+		PH_POUT ^= PH_BIT;
 	}
 }
 
