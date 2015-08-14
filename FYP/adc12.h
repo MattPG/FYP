@@ -2,6 +2,7 @@
 #define ADC12_H_
 
 #include <msp430.h>
+#include <stdint.h>
 
 /****************************
  * Extern Function Declarations

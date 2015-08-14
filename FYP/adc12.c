@@ -1,4 +1,6 @@
-#include "uart.h"
+#include "adc12.h"
+
+volatile int16_t adcResult;
 
 void adc12Init(){
 	P6SEL |= BIT0;							// Enable A/D channel A0
@@ -9,4 +11,11 @@ void adc12Init(){
 	ADC12CTL0 |= ENC;						// Enable Converter
 }
 
-
+/*
+ * ADC12 ISR
+ */
+#pragma vector=ADC12_VECTOR
+__interrupt void ADC12ISR (void){
+	adcResult = ADC12MEM0;					// Read Converted Value, IFG is Cleared
+	__bic_SR_register_on_exit(LPM0_bits); 	// Clear LPM0
+}
