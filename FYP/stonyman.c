@@ -1,5 +1,3 @@
-#include <msp430.h>
-#include <stdint.h>
 #include "stonyman.h"
 
 // Pin Mappings (excl. analogue output)
@@ -191,6 +189,7 @@ void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip){
 
 	// Horizontal binning
 	switch (colSkip){
+	default:
 	case NONE:    //no binning
 		hsw = 0x00;
 		break;
@@ -207,6 +206,7 @@ void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip){
 
 	// Vertical binning
 	switch (rowSkip){
+	default:
 	case NONE:    //no binning
 		vsw = 0x00;
 		break;

@@ -1,5 +1,3 @@
-#include <msp430.h>
-#include <stdint.h>
 #include "laser.h"
 
 #define LASER_POUT P5OUT

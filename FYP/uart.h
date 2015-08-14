@@ -1,13 +1,8 @@
-/*
- * uart.h
- *
- *  Created on: 3 Aug 2015
- *      Author: matthew
- */
-
 #ifndef UART_H_
 #define UART_H_
 
+#include <msp430.h>
+#include <stdint.h>
 
 /****************************
  * Extern Function Declarations

@@ -1,6 +1,8 @@
 #ifndef STONYMAN_H_
 #define STONYMAN_H_
 
+#include <msp430.h>
+#include <stdint.h>
 
 /****************************
  * Stonyman Pointers/Registers
