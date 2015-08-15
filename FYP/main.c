@@ -21,45 +21,37 @@ Recommended Resources:
  * MSP430F2618 Data Sheet
  * Stonyman Vision Chip data sheet
  * http://embeddedeye.com/ forum for Stonyman
-
-Ideal to have optmisation level 3 (-o3) and speed level 5.
 ******************************************************************************************************************************************/
 #include "main.h"
 
 #define DEBUG			// Enables UART communication
 
-#define ROW_START 21	// Row to start reading pixels from
-#define ROW_TOTAL 90	// Total number of rows to read
-#define COL_START 50	// Column to start reading pixels from
-#define COL_TOTAL 11	// Total number of columns to read
-#define IMG_TOTAL 2		// Number of images stored
-
-extern int16_t volatile const adcResult;	// Defined in adc12.c
-
-static void initialise();
-
 int main(void){
 	initialise();
 
-	int16_t images[IMG_TOTAL][ROW_TOTAL][COL_TOTAL];	// Stores the images
+	struct Pixel brightestPixel;
+	const struct SystemConfig systems[2] = {
+			[0]={ .rowStart = 21, .rowTotal = 90, .colStart = 50, .colTotal = 11,
+					.baseLength = 0.06, .alpha = 1.343904, .beta = M_PI }
+	};
+
+	uint8_t rowCount, colCount, imgCount, currSystem;	// Current pixel parameters
 	int16_t brightness;									// The pixel brightness
-	uint8_t rowCount, colCount, imgCount;				// Current pixel parameters
-	struct Pixel{
-		uint8_t row;
-		uint8_t col;
-		int16_t brightness;
-	} brightestPixel;
+	int16_t images[2][90][11];							// Stores the images
+	float height, pitch = 0, roll = 0;					// Orientation of sensor
+	float r1, r2, r3;									// Rotation matrix vals
 
 	/*
 	 * TODO: Implement math algorithm (in matlab first)
 	 */
 	while (1){
+		currSystem = 0;	// TODO: Delete when adding more systems
 		laserOff();	// Capture first image w/o laser and second image w/.
 		for (imgCount=0; imgCount<IMG_TOTAL; imgCount++){
-			setRow(ROW_START);	// Set stonyman row ptr
-			for (rowCount=0; rowCount<ROW_TOTAL; rowCount++){
-				setCol(COL_START);	// Set stonyman col ptr
-				for (colCount=0; colCount<COL_TOTAL; colCount++){
+			setRow(systems[currSystem].rowStart);	// Set stonyman row ptr
+			for (rowCount=0; rowCount<systems[currSystem].rowTotal; rowCount++){
+				setCol(systems[currSystem].colStart);	// Set stonyman col ptr
+				for (colCount=0; colCount<systems[currSystem].colTotal; colCount++){
 					__delay_cycles(PIXEL_SETTLING_DELAY);	// Settling delay for pixel reading
 					ADC12CTL0 |= ADC12SC;					// Start Conversion
 					__bis_SR_register(LPM0_bits + GIE);		// Enter LPM0, Enable interrupts
@@ -73,20 +65,29 @@ int main(void){
 
 		// Subtract second from first and store in first image
 		brightestPixel.brightness = INT16_MIN;	// Track the brightest pixel
-		for (rowCount=0; rowCount<ROW_TOTAL; rowCount++){
-			for (colCount=0; colCount<COL_TOTAL; colCount++){
+		for (rowCount=0; rowCount<systems[currSystem].rowTotal; rowCount++){
+			for (colCount=0; colCount<systems[currSystem].colTotal; colCount++){
 				// Get the postive difference of the two pixels
 				brightness = abs(images[0][rowCount][colCount] - images[1][rowCount][colCount]);
 				images[0][rowCount][colCount] = brightness;
 				// See if the current pixel is brighter
 				if (brightness > brightestPixel.brightness){
 					brightestPixel.brightness = brightness;
-					brightestPixel.row = rowCount + ROW_START;
-					brightestPixel.col = colCount + COL_START;
+					brightestPixel.row = rowCount + systems[currSystem].rowStart;
+					brightestPixel.col = colCount + systems[currSystem].colStart;
 				}
 			}
 		}
 
+		// Determine the height from the brightest pixel
+		r1 = -sinf(pitch);
+		r2 = cosf(pitch)*sinf(roll);
+		r3 = cosf(pitch)*cosf(roll);
+		height = F*systems[currSystem].baseLength*cosf(systems[currSystem].beta) *
+				(r3*tanf(systems[currSystem].alpha) -
+						(r1*cosf(systems[currSystem].beta) + r2*sinf(systems[currSystem].beta))) /
+				((Oc - brightestPixel.row)*tanf(systems[currSystem].alpha) +
+						F*cosf(systems[currSystem].beta));
 #ifdef DEBUG
 		/*
 		 * Transmit number representing start of image. Since this number
@@ -94,21 +95,15 @@ int main(void){
 		 */
 		sendByte(254);
 		sendByte(254);
-		/*
-		 * Transmit the row and column dimensions for this image
-		 * Assumes 0<=row<=255 and 0<=col<=255
-		 */
-		sendByte(ROW_TOTAL);
-		sendByte(COL_TOTAL);
-		/*
-		 * Transmit the row and column offsets for this image
-		 * Assumes 0<=row<=255 and 0<=col<=255
-		 */
-		sendByte(ROW_START);
-		sendByte(COL_START);
+		// Transmit the row and column dimensions for this image
+		sendByte(systems[currSystem].rowTotal);
+		sendByte(systems[currSystem].colTotal);
+		// Transmit the row and column offsets for this image
+		sendByte(systems[currSystem].rowStart);
+		sendByte(systems[currSystem].colStart);
 		// Transmit the image
-		for (rowCount=0; rowCount<ROW_TOTAL; rowCount++){
-			for (colCount=0; colCount<COL_TOTAL; colCount++){
+		for (rowCount=0; rowCount<systems[currSystem].rowTotal; rowCount++){
+			for (colCount=0; colCount<systems[currSystem].colTotal; colCount++){
 				sendInt(images[0][rowCount][colCount]);
 			}
 		}
@@ -116,8 +111,10 @@ int main(void){
 		sendByte(brightestPixel.row);
 		sendByte(brightestPixel.col);
 		sendInt(brightestPixel.brightness);
+		sendFloat(height);
 #endif
 		ledToggle();
+		currSystem = 1-currSystem;
 	}	// End infinite while loop
 }	// End main
 
