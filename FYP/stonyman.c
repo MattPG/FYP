@@ -37,7 +37,7 @@ static inline void setPointer(enum STONY_VALS ptr);
 static inline void setValue(const uint8_t val);
 static inline void setPointerValue(enum STONY_VALS ptr, const uint8_t val);
 static inline void pulsePin(enum STONY_PINS pinToPulse);
-static void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip);
+static void setBinning(enum PIXEL_BIN rowSkip, enum PIXEL_BIN colSkip);
 
 /****************************
  * Extern Function Definitions
@@ -184,7 +184,7 @@ static inline void pulsePin(enum STONY_PINS pinToPulse){
 //  hbin: set to 1, 2, 4, or 8 to bin horizontally by that amount
 //  vbin: set to 1, 2, 4, or 8 to bin vertically by that amount
 /*********************************************************************/
-void setBinning(enum PIXEL_SKIP rowSkip, enum PIXEL_SKIP colSkip){
+void setBinning(enum PIXEL_BIN rowSkip, enum PIXEL_BIN colSkip){
 	uint8_t hsw,vsw;
 
 	// Horizontal binning

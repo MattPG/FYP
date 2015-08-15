@@ -18,7 +18,7 @@ enum STONY_VALS{
 	AOBIAS
 };
 
-enum PIXEL_SKIP{
+enum PIXEL_BIN{
 	NONE=1,
 	TWO=2,
 	FOUR=4,
