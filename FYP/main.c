@@ -1,13 +1,17 @@
 /******************************************************************************************************************************************
 FYP-Height Estimation
-Source code for the Stonyman Vision chip & MSP430F2618 uC.
-Programmed using Code Composer studio (old) V5.4.0.00091 (new) V6.1.0.00104
+Source code for the Stonyman Vision chip (B/W Camera) & MSP430F2618 uC.
+Programmed using Code Composer studio V6.1.0.00104
 
 M. Bearlin-Allardice	November 2014	micah.allardice@gmail.com
 M. Greenwood			2015			matt.p.greenwood@gmail.com
 
-The code repeatedly takes an image of size TOTAL_ROW*TOTAL_COL and sends the dimensions and contents via UART (if DEBUG is defined).
-This was interfaced with a UART->USB dongle and read in via Matlab for debugging.
+The code repeatedly takes two images of size TOTAL_ROW*TOTAL_COL.
+The laser is off in one image and on in the next.
+The two images are subtracted from eachother to determine and changes in light intesnsity.
+The resulting image is iterated to find the brightest pixel (assumed to be position of laser).
+If DEBUG is enabled the dimensions and contents of image and laser position are sent via UART.
+This can be interfaced with a UART->USB dongle and read in via Matlab for debugging.
 
 The code assumes that 4*TOTAL_ROW*TOTAL_COL < ~7kb. This is required since there is only 8kb of RAM.
 There are two images stored and each pixel is two bytes.
@@ -30,17 +34,16 @@ Ideal to have optmisation level 3 (-o3) and speed level 5.
 #define COL_TOTAL 11	// Total number of columns to read
 #define IMG_TOTAL 2		// Number of images stored
 
-extern volatile const int16_t adcResult;	// Defined in adc12.c
+extern int16_t volatile const adcResult;	// Defined in adc12.c
 
 static void initialise();
 
 int main(void){
 	initialise();
 
-	volatile int16_t images[IMG_TOTAL][ROW_TOTAL][COL_TOTAL];	// Stores the images
-	uint8_t rowCount, colCount, imgCount;						// Current pixel parameters
-	int16_t brightness;											// The pixel brightness
-
+	int16_t images[IMG_TOTAL][ROW_TOTAL][COL_TOTAL];	// Stores the images
+	int16_t brightness;									// The pixel brightness
+	uint8_t rowCount, colCount, imgCount;				// Current pixel parameters
 	struct Pixel{
 		uint8_t row;
 		uint8_t col;
@@ -54,21 +57,19 @@ int main(void){
 		// Capture first image w/o laser and second image w/.
 		laserOff();
 		for (imgCount=0; imgCount<IMG_TOTAL; imgCount++){
-			// Go to first row
+			// Set the stonyman row ptr
 			setRow(ROW_START);
-			// Loop through all rows
 			for (rowCount=0; rowCount<ROW_TOTAL; rowCount++){
-				// Go to first column
+				// Set the stonyman col ptr
 				setCol(COL_START);
-				// Loop through all columns
 				for (colCount=0; colCount<COL_TOTAL; colCount++){
 					__delay_cycles(PIXEL_SETTLING_DELAY);	// Settling delay for pixel reading
 					ADC12CTL0 |= ADC12SC;					// Start Conversion
 					__bis_SR_register(LPM0_bits + GIE);		// Enter LPM0, Enable interrupts
 					images[imgCount][rowCount][colCount] = adcResult;
-					incrementCurrent();						// Move to next column
+					incrementCurrent();						// Increment stonyman col ptr
 				}	// End column loop
-				incrementRow();
+				incrementRow();	// Increment stonyman row ptr
 			}	// End row loop
 			laserToggle();
 		} // End image loop
@@ -119,9 +120,9 @@ int main(void){
 		sendByte(brightestPixel.col);
 		sendInt(brightestPixel.brightness);
 #endif
-	  ledToggle(); // Full image iterated
+		ledToggle(); // Full image iterated
 	}	// End infinite while loop
-}
+}	// End main
 
 static void initialise(){
 	// Clock Module

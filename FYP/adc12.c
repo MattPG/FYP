@@ -1,6 +1,6 @@
 #include "adc12.h"
 
-volatile int16_t adcResult;
+int16_t volatile adcResult;
 
 void adc12Init(){
 	P6SEL |= BIT0;							// Enable A/D channel A0
