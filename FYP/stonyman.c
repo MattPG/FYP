@@ -60,7 +60,7 @@ void stonymanInit(){
 	RP_POUT &= ~RP_BIT;
 
 	/*
-	 * Assert configuration settings in stonmany registers
+	 * Assert configuration settings in stonyman registers
 	 * Stonyman Vision Chip setup determined via testing
 	 * This was for 5V setup to allow biggest voltage swing
 	 */

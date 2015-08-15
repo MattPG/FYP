@@ -15,7 +15,7 @@ void adc12Init(){
  * ADC12 ISR
  */
 #pragma vector=ADC12_VECTOR
-__interrupt void ADC12ISR (void){
+__interrupt void ADC12ISR(void){
 	adcResult = ADC12MEM0;					// Read Converted Value, IFG is Cleared
 	__bic_SR_register_on_exit(LPM0_bits); 	// Clear LPM0
 }
