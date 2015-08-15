@@ -54,14 +54,11 @@ int main(void){
 	 * TODO: Implement math algorithm (in matlab first)
 	 */
 	while (1){
-		// Capture first image w/o laser and second image w/.
-		laserOff();
+		laserOff();	// Capture first image w/o laser and second image w/.
 		for (imgCount=0; imgCount<IMG_TOTAL; imgCount++){
-			// Set the stonyman row ptr
-			setRow(ROW_START);
+			setRow(ROW_START);	// Set stonyman row ptr
 			for (rowCount=0; rowCount<ROW_TOTAL; rowCount++){
-				// Set the stonyman col ptr
-				setCol(COL_START);
+				setCol(COL_START);	// Set stonyman col ptr
 				for (colCount=0; colCount<COL_TOTAL; colCount++){
 					__delay_cycles(PIXEL_SETTLING_DELAY);	// Settling delay for pixel reading
 					ADC12CTL0 |= ADC12SC;					// Start Conversion
@@ -120,7 +117,7 @@ int main(void){
 		sendByte(brightestPixel.col);
 		sendInt(brightestPixel.brightness);
 #endif
-		ledToggle(); // Full image iterated
+		ledToggle();
 	}	// End infinite while loop
 }	// End main
 
