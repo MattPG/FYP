@@ -10,6 +10,6 @@
 void uartInit();
 inline void sendByte(uint8_t byte);
 inline void sendInt(uint16_t integer);
-inline void sendInts(uint16_t *ints, uint8_t total);
+inline void sendFloat(float val);
 
 #endif /* UART_H_ */

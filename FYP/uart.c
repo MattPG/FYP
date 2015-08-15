@@ -12,9 +12,9 @@ void uartInit(){
 	UCA0CTL1 &= ~UCSWRST;					// **Initialize USCI state machine**
 }
 
-/**
+/*
  * Sends a single byte out through UART
- **/
+ */
 extern void sendByte(uint8_t byte){
 	while (!(IFG2&UCA0TXIFG));			// Buffer ready?
 	UCA0TXBUF = byte;					// TX -> RXed character
@@ -30,18 +30,16 @@ extern void sendInt(uint16_t integer){
 	UCA0TXBUF = integer;			// Transmit the 8 LSBs
 }
 
-/*
- * Sends an integer
- */
-extern void sendInts(uint16_t *ints, uint8_t total){
-	uint16_t integer;
-	uint8_t i;
-	for(i=total; i>0; i--){
-		integer = *ints++;
-		while (!(IFG2&UCA0TXIFG));
-		UCA0TXBUF = integer>>8;			// Transmit the 8 MSB
-		while (!(IFG2&UCA0TXIFG));
-		UCA0TXBUF = integer;			// Transmit the 8 LSBs
-	}
+extern void sendFloat(float f){
+	int16_t integer = f;					// Integer component
+	while (!(IFG2&UCA0TXIFG));
+	UCA0TXBUF = integer>>8;			// Transmit the 8 MSB
+	while (!(IFG2&UCA0TXIFG));
+	UCA0TXBUF = integer;			// Transmit the 8 LSBs
+	f -= integer;
+	integer = (int) (f * 10000.0f);		// Fractional Component (4 digits)
+	while (!(IFG2&UCA0TXIFG));
+	UCA0TXBUF = integer>>8;			// Transmit the 8 MSB
+	while (!(IFG2&UCA0TXIFG));
+	UCA0TXBUF = integer;			// Transmit the 8 LSBs
 }
-
