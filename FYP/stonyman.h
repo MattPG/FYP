@@ -25,7 +25,7 @@ enum PIXEL_BIN{
 	EIGHT=8
 };
 
-#define PIXEL_SETTLING_DELAY 8 // 16*delay_time (in micro-seconds, DCO=16MHz)
+#define PIXEL_SETTLING_DELAY 80 // 16*delay_time (in micro-seconds, DCO=16MHz)
 
 /****************************
  * Extern Function Declarations
