@@ -40,6 +40,13 @@ int main(void){
 	int16_t images[2][90][11];							// Stores the images
 	float height, pitch = 0, roll = 0;					// Orientation of sensor
 	float r1, r2, r3;									// Rotation matrix vals
+	float numer, denom;									// Calculation buffers
+
+	/* Calculation Constants */
+	const float X = F*cosf(systems[0].beta);
+	const float Ta = tanf(systems[0].alpha);
+	const float Cb = cosf(systems[0].beta);
+	const float Sb = sinf(systems[0].beta);
 
 	/*
 	 * TODO: Implement math algorithm (in matlab first)
@@ -83,11 +90,10 @@ int main(void){
 		r1 = -sinf(pitch);
 		r2 = cosf(pitch)*sinf(roll);
 		r3 = cosf(pitch)*cosf(roll);
-		height = F*systems[currSystem].baseLength*cosf(systems[currSystem].beta) *
-				(r3*tanf(systems[currSystem].alpha) -
-						(r1*cosf(systems[currSystem].beta) + r2*sinf(systems[currSystem].beta))) /
-				((Oc - brightestPixel.row)*tanf(systems[currSystem].alpha) +
-						F*cosf(systems[currSystem].beta));
+		numer = r3*Ta - (r1*Cb + r2*Sb);
+		numer *= X*systems[currSystem].baseLength;
+		denom = (Oc - brightestPixel.row)*Ta + X;
+		height = numer / denom;
 #ifdef DEBUG
 		/*
 		 * Transmit number representing start of image. Since this number
