@@ -29,7 +29,9 @@ Recommended Resources:
 int main(void){
 	initialise();
 
-	struct Pixel brightestPixel;
+	struct Pixel brightestPixel, prevPixel = {
+			.brightness = 0, .row = 55, .col = 55
+	};
 	const struct SystemConfig systems[2] = {
 			[0]={ .rowStart = 21, .rowTotal = 90, .colStart = 50, .colTotal = 11,
 					.baseLength = 0.06, .alpha = 1.343904, .beta = M_PI }
@@ -85,7 +87,8 @@ int main(void){
 				}
 			}
 		}
-
+		prevPixel = brightestPixel;
+		// TODO: source pitch & roll from GINA
 		// Determine the height from the brightest pixel
 		r1 = -sinf(pitch);
 		r2 = cosf(pitch)*sinf(roll);
