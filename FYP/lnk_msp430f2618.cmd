@@ -44,7 +44,7 @@
 /* -heap   0x0100                                   HEAP AREA SIZE            */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
-/* Version: 1.167                                                             */
+/* Version: 1.173                                                             */
 /*----------------------------------------------------------------------------*/
 
 /****************************************************************************/
@@ -63,6 +63,7 @@ MEMORY
     INFOD                   : origin = 0x1000, length = 0x0040
     FLASH                   : origin = 0x3100, length = 0xCEBE
     FLASH2                  : origin = 0x10000,length = 0x10000
+    BSLSIGNATURE            : origin = 0xFFBE, length = 0x0002, fill = 0xFFFF
     INT00                   : origin = 0xFFC0, length = 0x0002
     INT01                   : origin = 0xFFC2, length = 0x0002
     INT02                   : origin = 0xFFC4, length = 0x0002
@@ -121,6 +122,7 @@ SECTIONS
 #else
     .const      : {} > FLASH | FLASH2       /* Constant data                     */
 #endif
+    .bslsignature  : {} > BSLSIGNATURE      /* BSL Signature                     */
     .cio        : {} > RAM                  /* C I/O Buffer                      */
 
     .pinit      : {} > FLASH                /* C++ Constructor tables            */
