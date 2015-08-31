@@ -25,7 +25,7 @@ Recommended Resources:
 #include "main.h"
 
 #define DEBUG			// Enables UART communication
-
+#define THRESHOLD 20	// Image threshold value
 int main(void){
 	initialise();
 
@@ -38,6 +38,7 @@ int main(void){
 	};
 
 	uint8_t rowCount, colCount, imgCount, currSystem;	// Current pixel parameters
+	uint8_t rowDist;
 	int16_t brightness;									// The pixel brightness
 	int16_t images[2][90][11];							// Stores the images
 	float height, pitch = 0, roll = 0;					// Orientation of sensor
@@ -78,6 +79,12 @@ int main(void){
 			for (colCount=0; colCount<systems[currSystem].colTotal; colCount++){
 				// Get the postive difference of the two pixels
 				brightness = abs(images[0][rowCount][colCount] - images[1][rowCount][colCount]);
+				if (brightness < THRESHOLD){
+					brightness = 0;
+				}else {	// Adjust according to distance from previous estimate
+					rowDist = abs(prevPixel.row - (rowCount + systems[currSystem].rowStart));
+					brightness *= fmaxf(1 - ((float)rowDist)/55, 0.2);
+				}
 				images[0][rowCount][colCount] = brightness;
 				// See if the current pixel is brighter
 				if (brightness > brightestPixel.brightness){
