@@ -59,7 +59,7 @@ int main(void){
 			for (rowCount=0; rowCount<systems[currSystem].rowTotal; rowCount++){
 				setCol(systems[currSystem].colStart);	// Set stonyman col ptr
 				for (colCount=0; colCount<systems[currSystem].colTotal; colCount++){
-					__delay_cycles(PIXEL_SETTLING_DELAY);	// Settling delay for pixel reading
+					toggleAmp();							// Amplifier must be pulsed before sampling
 					ADC12CTL0 |= ADC12SC;					// Start Conversion
 					__bis_SR_register(LPM0_bits + GIE);		// Enter LPM0, Enable interrupts
 					images[imgCount][rowCount][colCount] = adcResult;

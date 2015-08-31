@@ -1,5 +1,19 @@
 #include "stonyman.h"
 
+// Amp toggling delay
+#define AMP_DELAY 16 // 16*delay_time (in micro-seconds)
+
+// Bias Settings (Higher value => Less effect)
+#define AOBIAS_VAL 55	// 0-63
+#define NBIAS_VAL 55	// 0-63
+#define VREF_VAL 15		// 0-63
+
+// Config Register
+#define NBIAS_ON BIT4	// NBias Generators (0, BIT4)
+#define AOBIAS_ON 0		// Analogue Output Bias generator (0, BIT5)
+#define AMP_ON	BIT3	// Enables amplifier (0, BIT3)
+#define AMP_GAIN 7		// Gain factor (0-7).
+
 // Pin Mappings (excl. analogue output)
 #define PH_POUT P1OUT
 #define PH_PDIR P1DIR
@@ -64,10 +78,11 @@ void stonymanInit(){
 	 * Stonyman Vision Chip setup determined via testing
 	 * This was for 5V setup to allow biggest voltage swing
 	 */
-	setPointerValue(AOBIAS, 55);
-	setPointerValue(NBIAS, 55);
+	setPointerValue(AOBIAS, AOBIAS_VAL);
+	setPointerValue(NBIAS, NBIAS_VAL);
+	setPointerValue(VREF, VREF_VAL);
 	setBinning(NONE, NONE);
-	setPointerValue(CONFIG,16);				// No amplifier
+	setPointerValue(CONFIG, NBIAS_ON + AOBIAS_ON + AMP_ON + AMP_GAIN);
 }
 
 /*
@@ -112,6 +127,13 @@ extern void incrementCurrent(){
 	pulsePin(IV);
 }
 
+/*
+ * toggleAmp
+ * Resets the output amplifier by toggling the INPHI pin
+ */
+extern void toggleAmp(){
+	pulsePin(PH);
+}
 /****************************
  * Static Function Definitions
  ***************************/
@@ -156,7 +178,12 @@ static inline void setPointerValue(enum STONY_VALS ptr, const uint8_t val){
  * pulses the pins to the Stonyman vision chip
  */
 static inline void pulsePin(enum STONY_PINS pinToPulse){
-	if(pinToPulse == IV){
+	if(pinToPulse == PH){
+		PH_POUT ^= PH_BIT;
+		__delay_cycles(AMP_DELAY);	// Settling delay for pixel reading
+		PH_POUT ^= PH_BIT;
+		__delay_cycles(AMP_DELAY);	// Settling delay for pixel reading
+	}else if(pinToPulse == IV){
 		IV_POUT ^= IV_BIT;
 		IV_POUT ^= IV_BIT;
 	}else if(pinToPulse == IP){
@@ -168,9 +195,6 @@ static inline void pulsePin(enum STONY_PINS pinToPulse){
 	}else if(pinToPulse == RV){
 		RV_POUT ^= RV_BIT;
 		RV_POUT ^= RV_BIT;
-	}else if(pinToPulse == PH){
-		PH_POUT ^= PH_BIT;
-		PH_POUT ^= PH_BIT;
 	}
 }
 

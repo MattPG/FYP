@@ -25,8 +25,6 @@ enum PIXEL_BIN{
 	EIGHT=8
 };
 
-#define PIXEL_SETTLING_DELAY 80 // 16*delay_time (in micro-seconds, DCO=16MHz)
-
 /****************************
  * Extern Function Declarations
  ***************************/
@@ -36,5 +34,6 @@ inline void setCol(uint8_t col);
 inline void incrementRow();
 inline void incrementCol();
 inline void incrementCurrent();
+inline void toggleAmp();
 
 #endif /* STONYMAN_H_ */
