@@ -43,7 +43,7 @@ int main(void){
 	int16_t images[2][90][11];							// Stores the images
 	float height, pitch = 0, roll = 0;					// Orientation of sensor
 	float r1, r2, r3;									// Rotation matrix vals
-	float numer, denom;									// Calculation buffers
+	float numer, denom, offs;						// Calculation buffers
 
 	/* Calculation Constants */
 	const float X = F*cosf(systems[0].beta);
@@ -100,10 +100,11 @@ int main(void){
 		r1 = -sinf(pitch);
 		r2 = cosf(pitch)*sinf(roll);
 		r3 = cosf(pitch)*cosf(roll);
+		offs = 0;
 		numer = r3*Ta - (r1*Cb + r2*Sb);
 		numer *= X*systems[currSystem].baseLength;
 		denom = (Oc - brightestPixel.row)*Ta + X;
-		height = numer / denom;
+		height = offs + numer / denom;
 #ifdef DEBUG
 		/*
 		 * Transmit number representing start of image. Since this number
