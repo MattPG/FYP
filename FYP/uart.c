@@ -21,7 +21,9 @@ extern void sendByte(uint8_t byte){
 }
 
 /*
+ * sendInt
  * Sends an integer
+ * param: integer - value to send
  */
 extern void sendInt(uint16_t integer){
 	while (!(IFG2&UCA0TXIFG));
@@ -29,7 +31,11 @@ extern void sendInt(uint16_t integer){
 	while (!(IFG2&UCA0TXIFG));
 	UCA0TXBUF = integer;			// Transmit the 8 LSBs
 }
-
+/*
+ * sendFloat
+ * Sends a float. Sent value has 4 decimals of precision.
+ * param: f - value to send
+ */
 extern void sendFloat(float f){
 	int16_t integer = f;					// Integer component
 	while (!(IFG2&UCA0TXIFG));
