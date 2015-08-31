@@ -24,7 +24,7 @@ Recommended Resources:
 ******************************************************************************************************************************************/
 #include "main.h"
 
-#define DEBUG			// Enables UART communication
+//#define DEBUG			// Enables UART communication
 #define THRESHOLD 20	// Image threshold value
 int main(void){
 	initialise();
