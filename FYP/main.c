@@ -34,28 +34,30 @@ int main(void){
 	};
 	const struct SystemConfig systems[2] = {
 			[0]={ .rowStart = 21, .rowTotal = 90, .colStart = 50, .colTotal = 11,
-					.baseLength = 0.06, .alpha = 1.343904, .beta = M_PI }
+					.baseLength = 0.06, .alpha = 1.343904, .beta = M_PI },
+			[1]={ .rowStart = 1, .rowTotal = 110, .colStart = 50, .colTotal = 11,
+					.baseLength = 0.15, .alpha = 1.134464, .beta = M_PI }
 	};
 
 	uint8_t rowCount, colCount, imgCount, currSystem;	// Current pixel parameters
 	uint8_t rowDist;
 	int16_t brightness;									// The pixel brightness
-	int16_t images[2][90][11];							// Stores the images
+	int16_t images[2][110][11];							// Stores the images
 	float height, pitch = 0, roll = 0;					// Orientation of sensor
 	float r1, r2, r3;									// Rotation matrix vals
 	float numer, denom, offs;						// Calculation buffers
 
 	/* Calculation Constants */
-	const float X = F*cosf(systems[0].beta);
-	const float Ta = tanf(systems[0].alpha);
-	const float Cb = cosf(systems[0].beta);
-	const float Sb = sinf(systems[0].beta);
+	const float X = F*cosf(systems[1].beta);
+	const float Ta = tanf(systems[1].alpha);
+	const float Cb = cosf(systems[1].beta);
+	const float Sb = sinf(systems[1].beta);
 
 	/*
 	 * TODO: Implement math algorithm (in matlab first)
 	 */
 	while (1){
-		currSystem = 0;	// TODO: Delete when adding more systems
+		currSystem = 1;	// TODO: Delete when adding more systems
 		laserOff();	// Capture first image w/o laser and second image w/.
 		for (imgCount=0; imgCount<IMG_TOTAL; imgCount++){
 			setRow(systems[currSystem].rowStart);	// Set stonyman row ptr
